@@ -77,6 +77,25 @@ func Test_DetectDistro(t *testing.T) {
 			preset.Default.WithConfigPath("/etc/containerd/not_found.toml"),
 		},
 		{
+			"default_and_distro_specific_exist",
+			args{
+				main.Config{
+					struct {
+						Name       string
+						ConfigPath string
+					}{"containerd", ""},
+					struct {
+						Path      string
+						AssetPath string
+					}{"/opt/kwasm", "/assets"},
+					struct{ RootPath string }{""},
+				},
+				tests.FixtureFs("../../testdata/node-installer/containerd/default-and-k0s-configs"),
+			},
+			false,
+			preset.K0s,
+		},
+		{
 			"unsupported",
 			args{
 				main.Config{
