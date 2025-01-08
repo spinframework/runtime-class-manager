@@ -7,10 +7,10 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o kwasm-node-installer ./cmd/node-installer
-RUN /app/kwasm-node-installer -h
+RUN CGO_ENABLED=0 go build -o rcm-node-installer ./cmd/node-installer
+RUN /app/rcm-node-installer -h
 
 FROM scratch
-COPY --from=builder /app/kwasm-node-installer /kwasm-node-installer
+COPY --from=builder /app/rcm-node-installer /rcm-node-installer
 
-ENTRYPOINT ["/kwasm-node-installer"]
+ENTRYPOINT ["/rcm-node-installer"]

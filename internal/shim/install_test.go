@@ -34,7 +34,7 @@ func TestConfig_Install(t *testing.T) {
 		rootFs    afero.Fs
 		hostFs    afero.Fs
 		assetPath string
-		kwasmPath string
+		rcmPath   string
 	}
 	type args struct {
 		shimName string
@@ -52,11 +52,11 @@ func TestConfig_Install(t *testing.T) {
 				tests.FixtureFs("../../testdata/node-installer"),
 				afero.NewMemMapFs(),
 				"/assets",
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"containerd-shim-slight-v1"},
 			wants{
-				"/opt/kwasm/bin/containerd-shim-slight-v1",
+				"/opt/rcm/bin/containerd-shim-slight-v1",
 				true,
 			},
 			false,
@@ -67,11 +67,11 @@ func TestConfig_Install(t *testing.T) {
 				tests.FixtureFs("../../testdata/node-installer"),
 				tests.FixtureFs("../../testdata/node-installer/shim"),
 				"/assets",
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"containerd-shim-spin-v1"},
 			wants{
-				"/opt/kwasm/bin/containerd-shim-spin-v1",
+				"/opt/rcm/bin/containerd-shim-spin-v1",
 				false,
 			},
 			false,
@@ -82,11 +82,11 @@ func TestConfig_Install(t *testing.T) {
 				tests.FixtureFs("../../testdata/node-installer"),
 				tests.FixtureFs("../../testdata/node-installer/shim"),
 				"/assets",
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"containerd-shim-slight-v1"},
 			wants{
-				"/opt/kwasm/bin/containerd-shim-slight-v1",
+				"/opt/rcm/bin/containerd-shim-slight-v1",
 				true,
 			},
 			false,
@@ -97,7 +97,7 @@ func TestConfig_Install(t *testing.T) {
 				afero.NewMemMapFs(),
 				tests.FixtureFs("../../testdata/node-installer/shim"),
 				"/assets",
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"some-shim"},
 			wants{
@@ -112,11 +112,11 @@ func TestConfig_Install(t *testing.T) {
 				tests.FixtureFs("../../testdata/node-installer"),
 				afero.NewReadOnlyFs(tests.FixtureFs("../../testdata/node-installer/shim")),
 				"/assets",
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"containerd-shim-spin-v1"},
 			wants{
-				"/opt/kwasm/bin/containerd-shim-spin-v1",
+				"/opt/rcm/bin/containerd-shim-spin-v1",
 				false,
 			},
 			true,
@@ -128,7 +128,7 @@ func TestConfig_Install(t *testing.T) {
 				rootFs:    tt.fields.rootFs,
 				hostFs:    tt.fields.hostFs,
 				assetPath: tt.fields.assetPath,
-				kwasmPath: tt.fields.kwasmPath,
+				rcmPath:   tt.fields.rcmPath,
 			}
 
 			filepath, changed, err := c.Install(tt.args.shimName)

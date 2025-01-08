@@ -32,7 +32,7 @@ func (c *Config) Install(shimName string) (filePath string, changed bool, err er
 	if err != nil {
 		return "", false, err
 	}
-	dstFilePath := path.Join(c.kwasmPath, "bin", shimName)
+	dstFilePath := path.Join(c.rcmPath, "bin", shimName)
 
 	err = c.hostFs.MkdirAll(path.Dir(dstFilePath), 0o775) //nolint:mnd // file permissions
 	if err != nil {
@@ -44,7 +44,7 @@ func (c *Config) Install(shimName string) (filePath string, changed bool, err er
 		return "", false, err
 	}
 
-	st, err := state.Get(c.hostFs, c.kwasmPath)
+	st, err := state.Get(c.hostFs, c.rcmPath)
 	if err != nil {
 		return "", false, err
 	}

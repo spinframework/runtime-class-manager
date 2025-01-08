@@ -31,7 +31,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - runtime.kwasm.sh
+  - runtime.spinkube.dev
   resources:
   - shims
   verbs:
@@ -43,13 +43,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - runtime.kwasm.sh
+  - runtime.spinkube.dev
   resources:
   - shims/finalizers
   verbs:
   - update
 - apiGroups:
-  - runtime.kwasm.sh
+  - runtime.spinkube.dev
   resources:
   - shims/status
   verbs:

@@ -12,8 +12,8 @@ import (
 
 func TestGet(t *testing.T) {
 	type args struct {
-		fs        afero.Fs
-		kwasmPath string
+		fs      afero.Fs
+		rcmPath string
 	}
 	tests := []struct {
 		name    string
@@ -25,13 +25,13 @@ func TestGet(t *testing.T) {
 			"existing state",
 			args{
 				tests.FixtureFs("../../testdata/node-installer/containerd/existing-containerd-shim-config"),
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			&state.State{
 				Shims: map[string]*state.Shim{
 					"spin-v1": {
 						Sha256: []byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
-						Path:   "/opt/kwasm/bin/containerd-shim-spin-v1",
+						Path:   "/opt/rcm/bin/containerd-shim-spin-v1",
 					},
 				},
 			},
@@ -41,7 +41,7 @@ func TestGet(t *testing.T) {
 			"missing state",
 			args{
 				tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-shim-config"),
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			&state.State{
 				Shims: map[string]*state.Shim{},
@@ -51,7 +51,7 @@ func TestGet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := state.Get(tt.args.fs, tt.args.kwasmPath)
+			got, err := state.Get(tt.args.fs, tt.args.rcmPath)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
@@ -72,7 +72,7 @@ func TestShimChanged(t *testing.T) {
 		Shims: map[string]*state.Shim{
 			"spin-v1": {
 				Sha256: []byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
-				Path:   "/opt/kwasm/bin/containerd-shim-spin-v1",
+				Path:   "/opt/rcm/bin/containerd-shim-spin-v1",
 			},
 		},
 	}
@@ -87,7 +87,7 @@ func TestShimChanged(t *testing.T) {
 			args{
 				"spin-v1",
 				[]byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
-				"/opt/kwasm/bin/containerd-shim-spin-v1",
+				"/opt/rcm/bin/containerd-shim-spin-v1",
 			},
 			false,
 		},
@@ -96,7 +96,7 @@ func TestShimChanged(t *testing.T) {
 			args{
 				"spin-v1",
 				[]byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 83},
-				"/opt/kwasm/bin/containerd-shim-spin-v1",
+				"/opt/rcm/bin/containerd-shim-spin-v1",
 			},
 			true,
 		},
@@ -105,7 +105,7 @@ func TestShimChanged(t *testing.T) {
 			args{
 				"spin-v1",
 				[]byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
-				"/opt/kwasm/bin/containerd-shim-spin-v2",
+				"/opt/rcm/bin/containerd-shim-spin-v2",
 			},
 			true,
 		},
@@ -114,7 +114,7 @@ func TestShimChanged(t *testing.T) {
 			args{
 				"non-existing",
 				[]byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
-				"/opt/kwasm/bin/containerd-shim-spin-v1",
+				"/opt/rcm/bin/containerd-shim-spin-v1",
 			},
 			true,
 		},

@@ -16,6 +16,6 @@
     blockio_config_file = ""
     rdt_config_file = ""
 
-# KWASM runtime config for spin-v1
+# RCM runtime config for spin-v1
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.spin-v1]
-runtime_type = "/opt/kwasm/bin/containerd-shim-spin-v1"
+runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"

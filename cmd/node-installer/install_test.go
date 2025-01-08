@@ -53,7 +53,7 @@ func Test_RunInstall(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{"/containerd/missing-containerd-shim-config"},
 				},
 				tests.FixtureFs("../../testdata/node-installer"),
@@ -72,7 +72,7 @@ func Test_RunInstall(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{"/containerd/existing-containerd-shim-config"},
 				},
 				tests.FixtureFs("../../testdata/node-installer"),

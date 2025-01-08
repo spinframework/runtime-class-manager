@@ -17,10 +17,10 @@ type State struct {
 	lockFilePath string
 }
 
-func Get(fs afero.Fs, kwasmPath string) (*State, error) {
+func Get(fs afero.Fs, rcmPath string) (*State, error) {
 	out := State{
 		Shims:        make(map[string]*Shim),
-		lockFilePath: filepath.Join(kwasmPath, "kwasm-lock.json"),
+		lockFilePath: filepath.Join(rcmPath, "rcm-lock.json"),
 		fs:           fs,
 	}
 	content, err := afero.ReadFile(fs, out.lockFilePath)

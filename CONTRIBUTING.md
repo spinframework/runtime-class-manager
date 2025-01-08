@@ -52,12 +52,12 @@ registry: ghcr.io/your-gh-username/runtime-class-manager
 
 The `Tiltfile` included in this repository will take care of the following:
 
-- Create the `kwasm` namespace and install the controller helm-chart in it.
+- Create the `runtime-class-manager` namespace and install the controller helm-chart in it.
 - Inject the development image in the deployment.
 - Automatically reload the controller when you make changes to the code.
 
 To run the controller, you just need to run the following command against an empty cluster:
 
 ```console
-$ tilt up --stream
+tilt up --stream
 ```

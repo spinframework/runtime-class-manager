@@ -21,7 +21,7 @@ type Config struct {
 		Name       string
 		ConfigPath string
 	}
-	Kwasm struct {
+	RCM struct {
 		Path      string
 		AssetPath string
 	}

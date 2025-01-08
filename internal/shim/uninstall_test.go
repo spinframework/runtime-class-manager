@@ -25,8 +25,8 @@ import (
 
 func TestConfig_Uninstall(t *testing.T) {
 	type fields struct {
-		hostFs    afero.Fs
-		kwasmPath string
+		hostFs  afero.Fs
+		rcmPath string
 	}
 	type args struct {
 		shimName string
@@ -42,7 +42,7 @@ func TestConfig_Uninstall(t *testing.T) {
 			"shim not installed",
 			fields{
 				tests.FixtureFs("../../testdata/node-installer/shim"),
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"not-existing-shim"},
 			"",
@@ -52,28 +52,28 @@ func TestConfig_Uninstall(t *testing.T) {
 			"missing shim binary",
 			fields{
 				tests.FixtureFs("../../testdata/node-installer/shim-missing-binary"),
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"spin-v1"},
-			"/opt/kwasm/bin/containerd-shim-spin-v1",
+			"/opt/rcm/bin/containerd-shim-spin-v1",
 			false,
 		},
 		{
 			"successful shim uninstallation",
 			fields{
 				tests.FixtureFs("../../testdata/node-installer/shim"),
-				"/opt/kwasm",
+				"/opt/rcm",
 			},
 			args{"spin-v1"},
-			"/opt/kwasm/bin/containerd-shim-spin-v1",
+			"/opt/rcm/bin/containerd-shim-spin-v1",
 			false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &Config{
-				hostFs:    tt.fields.hostFs,
-				kwasmPath: tt.fields.kwasmPath,
+				hostFs:  tt.fields.hostFs,
+				rcmPath: tt.fields.rcmPath,
 			}
 
 			got, err := c.Uninstall(tt.args.shimName)

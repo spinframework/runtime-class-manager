@@ -74,11 +74,11 @@ func (jr *JobReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		return ctrl.Result{}, fmt.Errorf("failed to get Job: %w", err)
 	}
 
-	if _, exists := job.Labels["kwasm.sh/shimName"]; !exists {
+	if _, exists := job.Labels["spinkube.dev/shimName"]; !exists {
 		return ctrl.Result{}, nil
 	}
 
-	shimName := job.Labels["kwasm.sh/shimName"]
+	shimName := job.Labels["spinkube.dev/shimName"]
 
 	node, err := jr.getNode(ctx, job.Spec.Template.Spec.NodeName)
 	if err != nil {
@@ -105,7 +105,7 @@ func (jr *JobReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	case batchv1.JobComplete:
 		log.Info().Msgf("Job %s is Completed.", job.Name)
 
-		installOrUninstall := job.Annotations["kwasm.sh/operation"]
+		installOrUninstall := job.Annotations["spinkube.dev/operation"]
 
 		switch installOrUninstall {
 		case INSTALL:

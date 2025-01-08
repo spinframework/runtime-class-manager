@@ -12,7 +12,7 @@ metadata:
   name: shim-viewer-role
 rules:
 - apiGroups:
-  - runtime.kwasm.sh
+  - runtime.spinkube.dev
   resources:
   - shims
   verbs:
@@ -20,7 +20,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - runtime.kwasm.sh
+  - runtime.spinkube.dev
   resources:
   - shims/status
   verbs:

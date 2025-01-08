@@ -59,10 +59,10 @@ func init() {
 func RunUninstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Restarter) error {
 	slog.Info("uninstall called", "shim", config.Runtime.Name)
 	shimName := config.Runtime.Name
-	runtimeName := path.Join(config.Kwasm.Path, "bin", shimName)
+	runtimeName := path.Join(config.RCM.Path, "bin", shimName)
 
 	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter)
-	shimConfig := shim.NewConfig(rootFs, hostFs, config.Kwasm.AssetPath, config.Kwasm.Path)
+	shimConfig := shim.NewConfig(rootFs, hostFs, config.RCM.AssetPath, config.RCM.Path)
 
 	binPath, err := shimConfig.Uninstall(shimName)
 	if err != nil {

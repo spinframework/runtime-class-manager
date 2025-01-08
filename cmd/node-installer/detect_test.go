@@ -49,7 +49,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/default"),
@@ -68,7 +68,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/default"),
@@ -87,7 +87,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/unsupported"),
@@ -106,7 +106,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/microk8s"),
@@ -125,7 +125,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/k0s"),
@@ -144,7 +144,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/k3s"),
@@ -163,7 +163,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/distros/rke2"),

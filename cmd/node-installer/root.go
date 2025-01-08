@@ -27,14 +27,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	config Config
-)
+var config Config
 
 // rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
-	Use:   "kwasm-node-installer",
-	Short: "kwasm-node-installer manages containerd shims",
+	Use:   "rcm-node-installer",
+	Short: "rcm-node-installer manages containerd shims",
 	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 		return initializeConfig(cmd)
 	},
@@ -52,14 +50,14 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&config.Runtime.Name, "runtime", "r", "containerd", "Set the container runtime to configure (containerd, cri-o)")
 	rootCmd.PersistentFlags().StringVarP(&config.Runtime.ConfigPath, "runtime-config", "c", "", "Path to the runtime config file. Will try to autodetect if left empty")
-	rootCmd.PersistentFlags().StringVarP(&config.Kwasm.Path, "kwasm-path", "k", "/opt/kwasm", "Working directory for kwasm on the host")
+	rootCmd.PersistentFlags().StringVarP(&config.RCM.Path, "rcm-path", "k", "/opt/rcm", "Working directory for the RuntimeClassManager on the host")
 	rootCmd.PersistentFlags().StringVarP(&config.Host.RootPath, "host-root", "H", "/", "Path to the host root path")
 }
 
 func initializeConfig(cmd *cobra.Command) error {
 	v := viper.New()
 
-	v.SetConfigName("kwasm")
+	v.SetConfigName("rcm")
 
 	v.AddConfigPath(".")
 	v.AddConfigPath("/etc")
@@ -70,8 +68,8 @@ func initializeConfig(cmd *cobra.Command) error {
 		}
 	}
 
-	// Environment variables are prefixed with KWASM_
-	v.SetEnvPrefix("KWASM")
+	// Environment variables are prefixed with RCM_
+	v.SetEnvPrefix("RCM")
 
 	// - is replaced with _ in environment variables
 	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))

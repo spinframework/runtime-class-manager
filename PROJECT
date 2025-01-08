@@ -2,7 +2,7 @@
 # This file is used to track the info used to scaffold your project
 # and allow the plugins properly work.
 # More info: https://book.kubebuilder.io/reference/project-config.html
-domain: kwasm.sh
+domain: spinkube.dev
 layout:
 - go.kubebuilder.io/v4
 projectName: runtime-class-manager
@@ -12,18 +12,18 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: kwasm.sh
+  domain: spinkube.dev
   group: runtime
   kind: Shim
   path: github.com/spinkube/runtime-class-manager/api/v1alpha1
   version: v1alpha1
 - controller: true
-  domain: kwasm.sh
+  domain: spinkube.dev
   group: runtime
   kind: Node
   version: v1alpha1
 - controller: true
-  domain: kwasm.sh
+  domain: spinkube.dev
   group: runtime
   kind: Job
   version: v1alpha1

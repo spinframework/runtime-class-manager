@@ -43,7 +43,7 @@ func TestConfig_AddRuntime(t *testing.T) {
 		{"missing shim config", fields{
 			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-shim-config"),
 			configPath: "/etc/containerd/config.toml",
-		}, args{"/opt/kwasm/bin/containerd-shim-spin-v1"}, false, `[plugins]
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, false, `[plugins]
   [plugins."io.containerd.monitor.v1.cgroups"]
     no_prometheus = false
   [plugins."io.containerd.service.v1.diff-service"]
@@ -61,18 +61,18 @@ func TestConfig_AddRuntime(t *testing.T) {
     blockio_config_file = ""
     rdt_config_file = ""
 
-# KWASM runtime config for spin-v1
+# RCM runtime config for spin-v1
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.spin-v1]
-runtime_type = "/opt/kwasm/bin/containerd-shim-spin-v1"
+runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"
 `},
 		{"missing config", fields{
 			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-config"),
 			configPath: "/etc/containerd/config.toml",
-		}, args{"/opt/kwasm/bin/containerd-shim-spin-v1"}, true, ``},
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, true, ``},
 		{"existing shim config", fields{
 			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/existing-containerd-shim-config"),
 			configPath: "/etc/containerd/config.toml",
-		}, args{"/opt/kwasm/bin/containerd-shim-spin-v1"}, false, `[plugins]
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, false, `[plugins]
   [plugins."io.containerd.monitor.v1.cgroups"]
     no_prometheus = false
   [plugins."io.containerd.service.v1.diff-service"]
@@ -90,9 +90,9 @@ runtime_type = "/opt/kwasm/bin/containerd-shim-spin-v1"
     blockio_config_file = ""
     rdt_config_file = ""
 
-# KWASM runtime config for spin-v1
+# RCM runtime config for spin-v1
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.spin-v1]
-runtime_type = "/opt/kwasm/bin/containerd-shim-spin-v1"
+runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"
 `},
 	}
 	for _, tt := range tests {
@@ -136,7 +136,7 @@ func TestConfig_RemoveRuntime(t *testing.T) {
 		{"missing shim config", fields{
 			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-shim-config"),
 			configPath: "/etc/containerd/config.toml",
-		}, args{"/opt/kwasm/bin/containerd-shim-spin-v1"}, false, `[plugins]
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, false, `[plugins]
   [plugins."io.containerd.monitor.v1.cgroups"]
     no_prometheus = false
   [plugins."io.containerd.service.v1.diff-service"]
@@ -157,11 +157,11 @@ func TestConfig_RemoveRuntime(t *testing.T) {
 		{"missing config", fields{
 			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-config"),
 			configPath: "/etc/containerd/config.toml",
-		}, args{"/opt/kwasm/bin/containerd-shim-spin-v1"}, true, ``},
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, true, ``},
 		{"existing shim config", fields{
 			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/existing-containerd-shim-config"),
 			configPath: "/etc/containerd/config.toml",
-		}, args{"/opt/kwasm/bin/containerd-shim-spin-v1"}, false, `[plugins]
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, false, `[plugins]
   [plugins."io.containerd.monitor.v1.cgroups"]
     no_prometheus = false
   [plugins."io.containerd.service.v1.diff-service"]

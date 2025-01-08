@@ -9,7 +9,7 @@ import (
 )
 
 func (c *Config) Uninstall(shimName string) (string, error) {
-	st, err := state.Get(c.hostFs, c.kwasmPath)
+	st, err := state.Get(c.hostFs, c.rcmPath)
 	if err != nil {
 		return "", err
 	}

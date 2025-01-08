@@ -198,11 +198,11 @@ $(ENVTEST): $(LOCALBIN)
 
 .PHONY: create-test-cluster
 create-kind-cluster:
-	kind create cluster --config ./hack/kind.yaml --name kwasm
+	kind create cluster --config ./hack/kind.yaml --name rcm
 
 .PHONY: kind-delete
 kind-delete:
-	kind delete cluster --name kwasm
+	kind delete cluster --name rcm
 
 .PHONY: kind
 kind: create-kind-cluster install

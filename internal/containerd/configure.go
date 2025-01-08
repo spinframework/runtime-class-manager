@@ -115,7 +115,7 @@ func (c *Config) RestartRuntime() error {
 
 func generateConfig(shimPath string, runtimeName string) string {
 	return fmt.Sprintf(`
-# KWASM runtime config for %s
+# RCM runtime config for %s
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.%s]
 runtime_type = "%s"
 `, runtimeName, runtimeName, shimPath)
