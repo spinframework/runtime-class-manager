@@ -41,11 +41,11 @@ package controller
 // 	Scheme *runtime.Scheme
 // }
 
-// const ControllerPrefix = "kwasm.sh/"
+// const ControllerPrefix = "spinkube.dev/"
 
-// //+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=nodes,verbs=get;list;watch;create;update;patch;delete
-// //+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=nodes/status,verbs=get;update;patch
-// //+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=nodes/finalizers,verbs=update
+// //+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=nodes,verbs=get;list;watch;create;update;patch;delete
+// //+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=nodes/status,verbs=get;update;patch
+// //+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=nodes/finalizers,verbs=update
 
 // // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // // move the current state of the cluster closer to the desired state.
@@ -76,8 +76,8 @@ package controller
 
 // 	// Get all Annotations that contain a Shim name
 // 	// This are annotations like
-// 	// * "kwasm.sh/<shimname>"
-// 	// * example: "kwasm.sh/shim-spin-v2" where is the name of the shim resource
+// 	// * "spinkube.dev/<shimname>"
+// 	// * example: "spinkube.dev/shim-spin-v2" where is the name of the shim resource
 // 	var shimList []string
 // 	for i := range node.Annotations {
 // 		if strings.HasPrefix(i, ControllerPrefix) {
@@ -102,8 +102,8 @@ package controller
 // 	}
 
 // 	// Check if node has provisioned labels for every shim
-// 	// * "kwasm.sh/<shimname>" = "provisioned"
-// 	// * example: "kwasm.sh/shim-spin-v2" = "provisioned" means node has "shim-spin-v2" installed
+// 	// * "spinkube.dev/<shimname>" = "provisioned"
+// 	// * example: "spinkube.dev/shim-spin-v2" = "provisioned" means node has "shim-spin-v2" installed
 // 	log.Info().Msgf("%s> Check if Shim provisioned...", node.Name)
 
 // 	for _, shimName := range shimList {
@@ -239,8 +239,8 @@ package controller
 // 			Name:      name[:nameMax],
 // 			Namespace: os.Getenv("CONTROLLER_NAMESPACE"),
 // 			Labels: map[string]string{
-// 				"kwasm.sh/job":         "true",
-// 				"kwasm.sh/" + shimName: "true",
+// 				"spinkube.dev/job":         "true",
+// 				"spinkube.dev/" + shimName: "true",
 // 				"node":                 node.Name,
 // 			},
 // 		},

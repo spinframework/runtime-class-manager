@@ -66,9 +66,9 @@ type opConfig struct {
 	args          []string
 }
 
-//+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=shims,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=shims/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=shims/finalizers,verbs=update
+//+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims/finalizers,verbs=update
 
 // SetupWithManager sets up the controller with the Manager.
 func (sr *ShimReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -398,15 +398,15 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 			Name:      name[:nameMax],
 			Namespace: os.Getenv("CONTROLLER_NAMESPACE"),
 			Annotations: map[string]string{
-				"kwasm.sh/nodeName":  node.Name,
-				"kwasm.sh/shimName":  shim.Name,
-				"kwasm.sh/operation": operation,
+				"spinkube.dev/nodeName":  node.Name,
+				"spinkube.dev/shimName":  shim.Name,
+				"spinkube.dev/operation": operation,
 			},
 			Labels: map[string]string{
-				name[:nameMax]:       "true",
-				"kwasm.sh/shimName":  shim.Name,
-				"kwasm.sh/operation": operation,
-				"kwasm.sh/job":       "true",
+				name[:nameMax]:           "true",
+				"spinkube.dev/shimName":  shim.Name,
+				"spinkube.dev/operation": operation,
+				"spinkube.dev/job":       "true",
 			},
 		},
 		Spec: batchv1.JobSpec{

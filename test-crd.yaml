@@ -1,4 +1,4 @@
-apiVersion: runtime.kwasm.sh/v1beta1
+apiVersion: runtime.spinkube.dev/v1beta1
 kind: Shim
 metadata:
   # The Shim resource is a cluster wide resource, no namespace.

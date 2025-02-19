@@ -1,6 +1,6 @@
 # runtime-class-manager
 
-runtime-class-manager is a Kubernetes operator that manages installation of Wasm shims onto nodes and related Runtimeclasses via [Shim custom resources](../../config/crd/bases/runtime.kwasm.sh_shims.yaml).
+runtime-class-manager is a Kubernetes operator that manages installation of Wasm shims onto nodes and related Runtimeclasses via [Shim custom resources](../../config/crd/bases/runtime.spinkube.dev_shims.yaml).
 
 ## Prerequisites
 

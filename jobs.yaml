@@ -6,7 +6,7 @@ metadata:
   creationTimestamp: "2024-01-27T21:29:34Z"
   generation: 1
   labels:
-    kwasm.sh/job: "true"
+    spinkube.dev/job: "true"
   name: wasmtime-spin-v2-provisioner
   namespace: default
   ownerReferences:
