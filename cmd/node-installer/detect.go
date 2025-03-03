@@ -25,6 +25,8 @@ import (
 	"github.com/spinkube/runtime-class-manager/internal/preset"
 )
 
+const defaultContainerdConfigLocation = "/etc/containerd/config.toml"
+
 var containerdConfigLocations = map[string]preset.Settings{
 	// Microk8s
 	"/var/snap/microk8s/current/args/containerd-template.toml": preset.MicroK8s,
@@ -34,8 +36,6 @@ var containerdConfigLocations = map[string]preset.Settings{
 	"/var/lib/rancher/k3s/agent/etc/containerd/config.toml": preset.K3s,
 	// K0s
 	"/etc/k0s/containerd.toml": preset.K0s,
-	// default
-	"/etc/containerd/config.toml": preset.Default,
 }
 
 func DetectDistro(config Config, hostFs afero.Fs) (preset.Settings, error) {
@@ -50,6 +50,8 @@ func DetectDistro(config Config, hostFs afero.Fs) (preset.Settings, error) {
 
 	var errs []error
 
+	// Check for distro-specific containerd config locations first.
+	// We do this because the default config may *also* exist in some scenarios.
 	for loc, distro := range containerdConfigLocations {
 		_, err := hostFs.Stat(loc)
 		if err == nil {
@@ -58,6 +60,13 @@ func DetectDistro(config Config, hostFs afero.Fs) (preset.Settings, error) {
 		}
 		errs = append(errs, err)
 	}
+
+	// Check the default location last, assuming no distro-specific location has been detected.
+	_, err := hostFs.Stat(defaultContainerdConfigLocation)
+	if err == nil {
+		return preset.Default, nil
+	}
+	errs = append(errs, err)
 
 	return preset.Settings{}, fmt.Errorf("failed to detect containerd config path: %w", errors.Join(errs...))
 }
