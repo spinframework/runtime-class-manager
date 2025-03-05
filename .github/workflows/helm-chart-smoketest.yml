@@ -4,11 +4,81 @@ on:
   workflow_call:
 
 env:
-  SHIM_SPIN_VERSION: v0.15.1
+  K8S_VERSION: v1.31.2
+  MICROK8S_CHANNEL: 1.31/stable
+  SHIM_SPIN_VERSION: v0.17.0
+  DOCKER_BUILD_SUMMARY: false
 
 jobs:
+  build-images:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        config:
+          - {
+              name: "runtime-class-manager",
+              context: ".",
+              file: "./Dockerfile"
+            }
+          - {
+              name: "shim-downloader",
+              context: "./images/downloader",
+              file: "./images/downloader/Dockerfile"
+            }
+          - {
+              name: "node-installer",
+              context: ".",
+              file: "./images/installer/Dockerfile"
+            }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.config.name }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.config.context }}
+          file: ${{ matrix.config.file }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: type=docker,dest=/tmp/${{ matrix.config.name }}.tar
+          tags: ${{ matrix.config.name }}:chart-test
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.config.name }}
+          path: /tmp/${{ matrix.config.name }}.tar
+
   helm-install-smoke-test:
     runs-on: ubuntu-22.04
+    needs: build-images
+    strategy:
+      matrix:
+        config:
+          - {
+              type: "kind",
+              import_cmd: "kind load image-archive"
+            }
+          - {
+              type: "minikube",
+              import_cmd: "minikube image load"
+            }
+          - {
+              type: "microk8s",
+              import_cmd: "sudo microk8s ctr images import"
+            }
+          - {
+              type: "k3d",
+              import_cmd: "k3d image import"
+            }
+
     steps:
       - uses: actions/checkout@v4
 
@@ -17,58 +87,50 @@ jobs:
         with:
           version: v3.15.4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build RCM
-        uses: docker/build-push-action@v6
+      - name: Download artifact
+        uses: actions/download-artifact@v4
         with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
-          tags: |
-            runtime-class-manager:chart-test
+          pattern: image-*
+          merge-multiple: true
+          path: /tmp
 
-      - name: Build node installer
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./images/installer/Dockerfile
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
-          tags: |
-            node-installer:chart-test
-
-      - name: Build shim downloader
-        uses: docker/build-push-action@v6
-        with:
-          context: ./images/downloader
-          file: ./images/downloader/Dockerfile
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
-          tags: |
-            shim-downloader:chart-test
-
-      - name: create kind cluster
+      # Note: 'uses' doesn't support variable interpolation, hence the
+      # k8s-specific steps below.
+      # Ref: https://github.com/orgs/community/discussions/25824
+      - name: Create kind cluster
+        if: matrix.config.type == 'kind'
         uses: helm/kind-action@v1
         with:
           cluster_name: kind
+          node_image: kindest/node:${{ env.K8S_VERSION }}
 
-      - name: import images into kind cluster
+      - name: Create minikube cluster
+        if: matrix.config.type == 'minikube'
+        uses: medyagh/setup-minikube@v0.0.18
+        with:
+          container-runtime: containerd
+          kubernetes-version: ${{ env.K8S_VERSION }}
+
+      - name: Create microk8s cluster
+        if: matrix.config.type == 'microk8s'
+        uses: balchua/microk8s-actions@v0.4.3
+        with:
+          channel: ${{ env.MICROK8S_CHANNEL }}
+
+      - name: Create k3d cluster
+        if: matrix.config.type == 'k3d'
+        uses: AbsaOSS/k3d-action@v2
+        with:
+          cluster-name: k3s-default
+          k3d-version: v5.7.4
+          args: |
+            --image docker.io/rancher/k3s:${{ env.K8S_VERSION }}-k3s1
+
+      - name: Import images
         run: |
-          kind load docker-image runtime-class-manager:chart-test
-          kind load docker-image node-installer:chart-test
-          kind load docker-image shim-downloader:chart-test
+          for image in $(ls /tmp/*.tar); do
+            ${{ matrix.config.import_cmd }} $image
+          done
 
       - name: helm install runtime-class-manager
         run: |
@@ -94,13 +156,25 @@ jobs:
       - name: label nodes
         run: kubectl label node --all spin=true
 
+      # MicroK8s runs directly on the host, so both the host's containerd process and MicroK8s' would
+      # otherwise be detected by runtime-class-manager. As of writing, rcm will fail if more than one
+      # containerd process is detected when attempting to restart. So, we stop the host process until
+      # the shim has been installed and the test app has been confirmed to run.
+      - name: stop system containerd
+        if: matrix.config.type == 'microk8s'
+        run: sudo systemctl stop containerd
+
       - name: run Spin App
         run: |
           kubectl apply -f testdata/apps/spin-app.yaml
           kubectl rollout status deployment wasm-spin --timeout 90s
           kubectl get pods -A
           kubectl port-forward svc/wasm-spin 8083:80 &
-          timeout 15s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
+          timeout 60s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
+
+      - name: restart system containerd
+        if: matrix.config.type == 'microk8s'
+        run: sudo systemctl start containerd
 
       - name: debug
         if: failure()
@@ -108,9 +182,18 @@ jobs:
           kubectl get pods -A
           kubectl describe shim spin-v2
           kubectl describe runtimeclass wasmtime-spin-v2
-          kubectl describe -n rcm pod -l job-name=kind-control-plane-spin-v2-install || true
+
+          # Get install pod logs
+          # Note: there may be multiple pods pending fix in https://github.com/spinkube/runtime-class-manager/issues/140
+          install_pod=$(kubectl get pods -n rcm --no-headers -o name | awk '{if ($1 ~ "-spin-v2-install") print $0}' | tail -n 1)
+          kubectl describe -n rcm $install_pod || true
+          kubectl logs -n rcm $install_pod || true
+
+          # RCM pod logs
           kubectl logs -n rcm -l app.kubernetes.io/name=runtime-class-manager || true
           kubectl describe -n rcm pod -l app.kubernetes.io/name=runtime-class-manager || true
+
+          # App logs
           kubectl logs -l app=wasm-spin || true
           kubectl describe pod -l app=wasm-spin || true
 
