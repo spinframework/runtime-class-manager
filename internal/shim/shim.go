@@ -26,15 +26,15 @@ type Config struct {
 	rootFs    afero.Fs
 	hostFs    afero.Fs
 	assetPath string
-	kwasmPath string
+	rcmPath   string
 }
 
-func NewConfig(rootFs afero.Fs, hostFs afero.Fs, assetPath string, kwasmPath string) *Config {
+func NewConfig(rootFs afero.Fs, hostFs afero.Fs, assetPath string, rcmPath string) *Config {
 	return &Config{
 		rootFs:    rootFs,
 		hostFs:    hostFs,
 		assetPath: assetPath,
-		kwasmPath: kwasmPath,
+		rcmPath:   rcmPath,
 	}
 }
 

@@ -23,28 +23,28 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/spinkube/runtime-class-manager/internal/state"
+	"github.com/spinframework/runtime-class-manager/internal/state"
 )
 
 func (c *Config) Install(shimName string) (filePath string, changed bool, err error) {
 	shimPath := filepath.Join(c.assetPath, shimName)
-	srcFile, err := c.rootFs.OpenFile(shimPath, os.O_RDONLY, 0o000) //nolint:gomnd // file permissions
+	srcFile, err := c.rootFs.OpenFile(shimPath, os.O_RDONLY, 0o000) //nolint:mnd // file permissions
 	if err != nil {
 		return "", false, err
 	}
-	dstFilePath := path.Join(c.kwasmPath, "bin", shimName)
+	dstFilePath := path.Join(c.rcmPath, "bin", shimName)
 
-	err = c.hostFs.MkdirAll(path.Dir(dstFilePath), 0o775) //nolint:gomnd // file permissions
+	err = c.hostFs.MkdirAll(path.Dir(dstFilePath), 0o775) //nolint:mnd // file permissions
 	if err != nil {
 		return dstFilePath, false, err
 	}
 
-	dstFile, err := c.hostFs.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755) //nolint:gomnd // file permissions
+	dstFile, err := c.hostFs.OpenFile(dstFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755) //nolint:mnd // file permissions
 	if err != nil {
 		return "", false, err
 	}
 
-	st, err := state.Get(c.hostFs, c.kwasmPath)
+	st, err := state.Get(c.hostFs, c.rcmPath)
 	if err != nil {
 		return "", false, err
 	}

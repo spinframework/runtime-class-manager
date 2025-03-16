@@ -32,7 +32,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	runtimev1alpha1 "github.com/spinkube/runtime-class-manager/api/v1alpha1"
+	runtimev1alpha1 "github.com/spinframework/runtime-class-manager/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 

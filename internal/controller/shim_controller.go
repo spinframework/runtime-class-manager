@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 
 	"github.com/rs/zerolog/log"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,7 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	rcmv1 "github.com/spinkube/runtime-class-manager/api/v1alpha1"
+	rcmv1 "github.com/spinframework/runtime-class-manager/api/v1alpha1"
 )
 
 const (
@@ -48,6 +49,7 @@ const (
 	UNINSTALL                     = "uninstall"
 	ProvisioningStatusProvisioned = "provisioned"
 	ProvisioningStatusPending     = "pending"
+	K8sNameMaxLength              = 63
 )
 
 // ShimReconciler reconciles a Shim object
@@ -64,9 +66,9 @@ type opConfig struct {
 	args          []string
 }
 
-//+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=shims,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=shims/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=runtime.kwasm.sh,resources=shims/finalizers,verbs=update
+//+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims/finalizers,verbs=update
 
 // SetupWithManager sets up the controller with the Manager.
 func (sr *ShimReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -227,7 +229,7 @@ func (sr *ShimReconciler) handleInstallShim(ctx context.Context, shim *rcmv1.Shi
 	case rcmv1.RolloutStrategyTypeRolling:
 		{
 			log.Debug().Msgf("Rolling strategy selected: maxUpdate=%d", shim.Spec.RolloutStrategy.Rolling.MaxUpdate)
-			return ctrl.Result{}, errors.New("Rolling strategy not implemented yet")
+			return ctrl.Result{}, errors.New("rolling strategy not implemented yet")
 		}
 	case rcmv1.RolloutStrategyTypeRecreate:
 		{
@@ -385,7 +387,7 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 	sr.setOperationConfiguration(shim, &opConfig)
 
 	name := node.Name + "-" + shim.Name + "-" + operation
-	nameMax := int(math.Min(float64(len(name)), 63))
+	nameMax := int(math.Min(float64(len(name)), K8sNameMaxLength))
 
 	job := &batchv1.Job{
 		TypeMeta: metav1.TypeMeta{
@@ -396,15 +398,15 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 			Name:      name[:nameMax],
 			Namespace: os.Getenv("CONTROLLER_NAMESPACE"),
 			Annotations: map[string]string{
-				"kwasm.sh/nodeName":  node.Name,
-				"kwasm.sh/shimName":  shim.Name,
-				"kwasm.sh/operation": operation,
+				"spinkube.dev/nodeName":  node.Name,
+				"spinkube.dev/shimName":  shim.Name,
+				"spinkube.dev/operation": operation,
 			},
 			Labels: map[string]string{
-				name[:nameMax]:       "true",
-				"kwasm.sh/shimName":  shim.Name,
-				"kwasm.sh/operation": operation,
-				"kwasm.sh/job":       "true",
+				name[:nameMax]:           "true",
+				"spinkube.dev/shimName":  shim.Name,
+				"spinkube.dev/operation": operation,
+				"spinkube.dev/job":       "true",
 			},
 		},
 		Spec: batchv1.JobSpec{
@@ -459,7 +461,12 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 			},
 		},
 	}
-
+	// set ttl for the installer job only if specified by the user
+	if ttlStr := os.Getenv("SHIM_NODE_INSTALLER_JOB_TTL"); ttlStr != "" {
+		if ttl, err := strconv.ParseInt(ttlStr, 10, 32); err == nil && ttl > 0 {
+			job.Spec.TTLSecondsAfterFinished = ptr(int32(ttl))
+		}
+	}
 	if operation == INSTALL {
 		if err := ctrl.SetControllerReference(shim, job, sr.Scheme); err != nil {
 			return nil, fmt.Errorf("failed to set controller reference: %w", err)
@@ -498,7 +505,7 @@ func (sr *ShimReconciler) handleDeployRuntimeClass(ctx context.Context, shim *rc
 // createRuntimeClassManifest creates a RuntimeClass manifest for a Shim.
 func (sr *ShimReconciler) createRuntimeClassManifest(shim *rcmv1.Shim) (*nodev1.RuntimeClass, error) {
 	name := shim.Spec.RuntimeClass.Name
-	nameMax := int(math.Min(float64(len(name)), 63))
+	nameMax := int(math.Min(float64(len(name)), K8sNameMaxLength))
 
 	nodeSelector := shim.Spec.NodeSelector
 	if nodeSelector == nil {

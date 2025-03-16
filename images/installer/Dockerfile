@@ -1,4 +1,4 @@
-FROM golang:1.23@sha256:d56c3e08fe5b27729ee3834854ae8f7015af48fd651cd25d1e3bcf3c19830174 AS builder
+FROM golang:1.24@sha256:fa145a3c13f145356057e00ed6f66fbd9bf017798c9d7b2b8e956651fe4f52da AS builder
 
 WORKDIR /app
 
@@ -7,10 +7,10 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o kwasm-node-installer ./cmd/node-installer
-RUN /app/kwasm-node-installer -h
+RUN CGO_ENABLED=0 go build -o rcm-node-installer ./cmd/node-installer
+RUN /app/rcm-node-installer -h
 
 FROM scratch
-COPY --from=builder /app/kwasm-node-installer /kwasm-node-installer
+COPY --from=builder /app/rcm-node-installer /rcm-node-installer
 
-ENTRYPOINT ["/kwasm-node-installer"]
+ENTRYPOINT ["/rcm-node-installer"]

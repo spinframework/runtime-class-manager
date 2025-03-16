@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	"github.com/spinkube/runtime-class-manager/internal/containerd"
+	"github.com/spinframework/runtime-class-manager/internal/containerd"
 )
 
 type Settings struct {

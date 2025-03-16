@@ -2,7 +2,7 @@
  "shims": {
   "spin-v1": {
    "sha256": "6da5e8f17a9bfa9cb04cf22c87b6475394ecec3af4fdc337f72d6dbf3319ea52",
-   "path": "/opt/kwasm/bin/containerd-shim-spin-v1"
+   "path": "/opt/rcm/bin/containerd-shim-spin-v1"
   }
  }
 }

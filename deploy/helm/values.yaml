@@ -5,18 +5,20 @@
 replicaCount: 1
 
 image:
-  repository: "ghcr.io/spinkube/runtime-class-manager"
+  repository: "ghcr.io/spinframework/runtime-class-manager"
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
 rcm:
   shimDownloaderImage:
-    repository: "ghcr.io/spinkube/shim-downloader"
+    repository: "ghcr.io/spinframework/shim-downloader"
     tag: "latest"
   nodeInstallerImage:
-    repository: "ghcr.io/spinkube/node-installer"
+    repository: "ghcr.io/spinframework/node-installer"
     tag: "latest"
+  nodeInstallerJob:
+    ttl: 0
 
 imagePullSecrets: []
 nameOverride: ""

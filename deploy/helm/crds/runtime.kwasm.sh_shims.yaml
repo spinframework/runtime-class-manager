@@ -4,9 +4,9 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.13.0
-  name: shims.runtime.kwasm.sh
+  name: shims.runtime.spinkube.dev
 spec:
-  group: runtime.kwasm.sh
+  group: runtime.spinkube.dev
   names:
     kind: Shim
     listKind: ShimList

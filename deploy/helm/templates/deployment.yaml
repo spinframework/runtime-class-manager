@@ -43,6 +43,8 @@ spec:
             value: "{{ .Values.rcm.shimDownloaderImage.repository }}:{{ .Values.rcm.shimDownloaderImage.tag | default .Chart.AppVersion }}"
           - name: SHIM_NODE_INSTALLER_IMAGE
             value: "{{ .Values.rcm.nodeInstallerImage.repository }}:{{ .Values.rcm.nodeInstallerImage.tag | default .Chart.AppVersion }}"
+          - name: SHIM_NODE_INSTALLER_JOB_TTL
+            value: "{{ .Values.rcm.nodeInstallerJob.ttl | default 0 }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

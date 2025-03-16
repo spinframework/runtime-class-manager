@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/spf13/afero"
-	"github.com/spinkube/runtime-class-manager/internal/preset"
-	tests "github.com/spinkube/runtime-class-manager/tests/node-installer"
+	"github.com/spinframework/runtime-class-manager/internal/preset"
+	tests "github.com/spinframework/runtime-class-manager/tests/node-installer"
 	"github.com/stretchr/testify/require"
 )
 

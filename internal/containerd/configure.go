@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/spf13/afero"
-	"github.com/spinkube/runtime-class-manager/internal/shim"
+	"github.com/spinframework/runtime-class-manager/internal/shim"
 )
 
 type Restarter interface {
@@ -64,7 +64,7 @@ func (c *Config) AddRuntime(shimPath string) error {
 	}
 
 	// Open file in append mode
-	file, err := c.hostFs.OpenFile(c.configPath, os.O_APPEND|os.O_WRONLY, 0o644) //nolint:gomnd // file permissions
+	file, err := c.hostFs.OpenFile(c.configPath, os.O_APPEND|os.O_WRONLY, 0o644) //nolint:mnd // file permissions
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (c *Config) RemoveRuntime(shimPath string) (changed bool, err error) {
 	modifiedData := strings.ReplaceAll(string(data), cfg, "")
 
 	// Write the modified data back to the file.
-	err = afero.WriteFile(c.hostFs, c.configPath, []byte(modifiedData), 0o644) //nolint:gomnd // file permissions
+	err = afero.WriteFile(c.hostFs, c.configPath, []byte(modifiedData), 0o644) //nolint:mnd // file permissions
 	if err != nil {
 		return false, err
 	}
@@ -115,7 +115,7 @@ func (c *Config) RestartRuntime() error {
 
 func generateConfig(shimPath string, runtimeName string) string {
 	return fmt.Sprintf(`
-# KWASM runtime config for %s
+# RCM runtime config for %s
 [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.%s]
 runtime_type = "%s"
 `, runtimeName, runtimeName, shimPath)

@@ -1,47 +1,75 @@
 # This action releases the runtime-class-manager helm chart
-# The action must run on each commit done against main, however
-# a new release will be performed **only** when a change occurs inside
-# of the `charts` directory.
+#
+# A chart is published to the configured OCI registry on every push to main
+# as well as on semver tag releases (via workflow_call from release.yml).
 name: Release helm chart
-
-permissions:
-  contents: read
 
 on:
   push:
     branches:
       - main
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  CHART_NAME: runtime-class-manager
 
 jobs:
   release:
-    runs-on: ubuntu-latest
-
-    permissions:
-      id-token: write
-      packages: write
-      contents: write
+    name: Release chart
+    runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Configure Git
+      - name: Install helm
+        uses: Azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: Determine chart version
         run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          if [[ "${{ startsWith(github.ref, 'refs/tags/v') }}" == "true" ]]; then
+            # NOTE: We remove the leading 'v' to comply with helm's versioning requirements
+            echo "CHART_VERSION=$(echo -n ${{ github.ref_name }} | sed -rn 's/(v)?(.*)/\2/p')" >> $GITHUB_ENV
+            echo "APP_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+          else
+            # NOTE: We can replace 0.0.0 with e.g. $(git describe --tags $(git rev-list --tags --max-count=1)) once we have a first tag
+            # However, we'll also need to update the checkout step with 'fetch-depth: 0' if we list tags
+            echo "CHART_VERSION=0.0.0-$(date +%Y%m%d-%H%M%S)-g$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+            # Setting to 'latest' to match tag used in container-image.yml
+            echo "APP_VERSION=latest" >> $GITHUB_ENV
+          fi
 
-      - name: Install Helm
-        uses: azure/setup-helm@fe7b79cd5ee1e45176fcad797de68ecaf3ca4814 # v4.2.0
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
         with:
-          version: v3.14.0
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run chart-releaser
-        if: github.ref == 'refs/heads/main'
-        uses: helm/chart-releaser-action@a917fd15b20e8b64b94d9158ad54cd6345335584 # v1.6.0
+      - name: Package chart
+        run: make helm-package
+
+      - name: Lint packaged chart
+        run: make helm-lint
+
+      - name: Upload chart as GitHub artifact
+        uses: actions/upload-artifact@v4
         with:
-          charts_dir: deploy/helm
+          name: ${{ env.CHART_NAME }}
+          path: _dist/${{ env.CHART_NAME }}-${{ env.CHART_VERSION }}.tgz
+
+      - name: Publish chart
         env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_RELEASE_NAME_TEMPLATE: "{{ .Name }}-chart-{{ .Version }}"
+          CHART_REGISTRY: ${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+        run: |
+          make helm-publish
+
+          echo '### Helm chart published:' >> $GITHUB_STEP_SUMMARY
+          echo '- `Reference: ${{ env.CHART_REGISTRY }}/${{ env.CHART_NAME }}`' >> $GITHUB_STEP_SUMMARY
+          echo '- `Version: ${{ env.CHART_VERSION }}`' >> $GITHUB_STEP_SUMMARY

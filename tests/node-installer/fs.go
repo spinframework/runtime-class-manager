@@ -15,7 +15,7 @@ func FixtureFs(fixturePath string) afero.Fs {
 			return err
 		}
 		if info.IsDir() {
-			return fs.MkdirAll(path, 0755) //nolint:gomnd // file permissions
+			return fs.MkdirAll(path, 0755) //nolint:mnd // file permissions
 		}
 		src, err := baseFs.Open(path)
 		if err != nil {

@@ -2,14 +2,14 @@ Welcome to Runtime-Class-Manager.
 
 Next steps:
 
-Create one or more Wasm Shim custom resources. See the samples in https://github.com/spinkube/runtime-class-manager/tree/main/config/samples.
+Create one or more Wasm Shim custom resources. See the samples in https://github.com/spinframework/runtime-class-manager/tree/main/config/samples.
 
 > Note: Ensure that the `location` for the specified shim binary points to the correct architecture for your Node(s)
 
 For example, install the Spin shim:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/spinkube/runtime-class-manager/refs/heads/main/config/samples/test_shim_spin.yaml
+kubectl apply -f https://raw.githubusercontent.com/spinframework/runtime-class-manager/refs/heads/main/config/samples/test_shim_spin.yaml
 ```
 
 Next, annotate one or more nodes with a label corresponding to the `nodeSelector` declared in the Shim, runtime-class-manager will install the shim as well as create the corresponding RuntimeClass:

@@ -33,8 +33,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	runtimev1alpha1 "github.com/spinkube/runtime-class-manager/api/v1alpha1"
-	"github.com/spinkube/runtime-class-manager/internal/controller"
+	runtimev1alpha1 "github.com/spinframework/runtime-class-manager/api/v1alpha1"
+	"github.com/spinframework/runtime-class-manager/internal/controller"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -72,7 +72,7 @@ func main() {
 		Metrics:                metricsserver.Options{BindAddress: metricsAddr},
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "7584d300.kwasm.sh",
+		LeaderElectionID:       "7584d300.spinkube.dev",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly

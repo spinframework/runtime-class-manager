@@ -16,7 +16,7 @@ spec:
       runtimeClassName: wasmtime-spin-v2
       containers:
       - name: spin-hello
-        image: ghcr.io/spinkube/spin-operator/hello-world:20240909-145818-g30def7d
+        image: ghcr.io/spinframework/spin-operator/hello-world:20250206-205102-gf007281
         command: ["/"]
 ---
 apiVersion: v1

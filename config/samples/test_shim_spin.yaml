@@ -1,4 +1,4 @@
-apiVersion: runtime.kwasm.sh/v1alpha1 
+apiVersion: runtime.spinkube.dev/v1alpha1 
 kind: Shim
 metadata:
   name: spin-v2
@@ -15,11 +15,11 @@ spec:
   fetchStrategy:
     type: anonymousHttp
     anonHttp:
-      location: "https://github.com/spinkube/containerd-shim-spin/releases/download/v0.15.1/containerd-shim-spin-v2-linux-aarch64.tar.gz"
+      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.15.1/containerd-shim-spin-v2-linux-aarch64.tar.gz"
 
   runtimeClass:
     # Note: this name is used by the Spin Operator project as its default:
-    # https://github.com/spinkube/spin-operator/blob/main/config/samples/spin-shim-executor.yaml
+    # https://github.com/spinframework/spin-operator/blob/main/config/samples/spin-shim-executor.yaml
     name: wasmtime-spin-v2
     handler: spin-v2
 

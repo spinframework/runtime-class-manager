@@ -29,7 +29,7 @@ rules:
   - patch
 
 - apiGroups:
-  - runtime.kwasm.sh
+  - runtime.spinkube.dev
   resources:
   - shims
   verbs:

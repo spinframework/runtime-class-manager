@@ -149,7 +149,7 @@ jobs:
       - name: apply Spin shim
         run: |
           # Ensure shim binary is compatible with runner arch
-          yq -i '.spec.fetchStrategy.anonHttp.location = "https://github.com/spinkube/containerd-shim-spin/releases/download/${{ env.SHIM_SPIN_VERSION }}/containerd-shim-spin-v2-linux-x86_64.tar.gz"' \
+          yq -i '.spec.fetchStrategy.anonHttp.location = "https://github.com/spinframework/containerd-shim-spin/releases/download/${{ env.SHIM_SPIN_VERSION }}/containerd-shim-spin-v2-linux-x86_64.tar.gz"' \
             config/samples/test_shim_spin.yaml
           kubectl apply -f config/samples/test_shim_spin.yaml
 

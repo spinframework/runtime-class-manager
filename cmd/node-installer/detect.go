@@ -22,7 +22,7 @@ import (
 	"log/slog"
 
 	"github.com/spf13/afero"
-	"github.com/spinkube/runtime-class-manager/internal/preset"
+	"github.com/spinframework/runtime-class-manager/internal/preset"
 )
 
 var containerdConfigLocations = map[string]preset.Settings{

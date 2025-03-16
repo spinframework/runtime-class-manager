@@ -198,11 +198,47 @@ $(ENVTEST): $(LOCALBIN)
 
 .PHONY: create-test-cluster
 create-kind-cluster:
-	kind create cluster --config ./hack/kind.yaml --name kwasm
+	kind create cluster --config ./hack/kind.yaml --name rcm
 
 .PHONY: kind-delete
 kind-delete:
-	kind delete cluster --name kwasm
+	kind delete cluster --name rcm
 
 .PHONY: kind
 kind: create-kind-cluster install
+
+##@ Helm chart distribution
+
+HELM           ?= helm
+CHART_NAME     := runtime-class-manager
+CHART_REGISTRY ?= ghcr.io/spinkube/charts
+# We can update 0.0.0 to the most recent tag once we have a first git tag.
+# Note that the leading 'v' must be dropped per Helm's versioning requirements
+# e.g. $(shell git describe --tags --abbrev=0 | sed -rn 's/(v)?(.*)/\2/p')
+CHART_VERSION  ?= 0.0.0-$(VERSION)
+APP_VERSION    ?= $(VERSION)
+STAGING_DIR    ?= _dist
+
+.PHONY: helm-package
+helm-package: $(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION).tgz
+
+$(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION):
+	mkdir -p $(STAGING_DIR)
+	cp -r deploy/helm $(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION)
+
+$(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION).tgz: $(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION)
+	CHART_NAME=$(CHART_NAME) CHART_VERSION=$(CHART_VERSION) APP_VERSION=$(APP_VERSION) STAGING_DIR=$(STAGING_DIR) ./deploy/update-chart-versions.sh
+	$(HELM) package \
+		--version $(CHART_VERSION) \
+		--destination $(STAGING_DIR) \
+		$(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION)
+
+.PHONY: helm-publish
+helm-publish: helm-package
+	$(HELM) push \
+		$(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION).tgz \
+		oci://$(CHART_REGISTRY)
+
+.PHONY: helm-lint
+helm-lint: helm-package
+	$(HELM) lint $(STAGING_DIR)/$(CHART_NAME)-$(CHART_VERSION).tgz

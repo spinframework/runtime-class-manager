@@ -22,9 +22,9 @@ func TestShim_MarshalJSON(t *testing.T) {
 			"default",
 			fields{
 				Sha256: []byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
-				Path:   "/opt/kwasm/bin/containerd-shim-spin-v1",
+				Path:   "/opt/rcm/bin/containerd-shim-spin-v1",
 			},
-			`{"sha256":"6da5e8f17a9bfa9cb04cf22c87b6475394ecec3af4fdc337f72d6dbf3319ea52","path":"/opt/kwasm/bin/containerd-shim-spin-v1"}`,
+			`{"sha256":"6da5e8f17a9bfa9cb04cf22c87b6475394ecec3af4fdc337f72d6dbf3319ea52","path":"/opt/rcm/bin/containerd-shim-spin-v1"}`,
 			false,
 		},
 	}
@@ -62,10 +62,10 @@ func TestShim_UnmarshalJSON(t *testing.T) {
 		{
 			"default",
 			args{
-				`{"sha256":"6da5e8f17a9bfa9cb04cf22c87b6475394ecec3af4fdc337f72d6dbf3319ea52","path":"/opt/kwasm/bin/containerd-shim-spin-v1"}`,
+				`{"sha256":"6da5e8f17a9bfa9cb04cf22c87b6475394ecec3af4fdc337f72d6dbf3319ea52","path":"/opt/rcm/bin/containerd-shim-spin-v1"}`,
 			},
 			wants{
-				path:   "/opt/kwasm/bin/containerd-shim-spin-v1",
+				path:   "/opt/rcm/bin/containerd-shim-spin-v1",
 				sha256: []byte{109, 165, 232, 241, 122, 155, 250, 156, 176, 76, 242, 44, 135, 182, 71, 83, 148, 236, 236, 58, 244, 253, 195, 55, 247, 45, 109, 191, 51, 25, 234, 82},
 			},
 			false,
@@ -73,10 +73,10 @@ func TestShim_UnmarshalJSON(t *testing.T) {
 		{
 			"broken sha",
 			args{
-				`{"sha256":"2","path":"/opt/kwasm/bin/containerd-shim-spin-v1"}`,
+				`{"sha256":"2","path":"/opt/rcm/bin/containerd-shim-spin-v1"}`,
 			},
 			wants{
-				path:   "/opt/kwasm/bin/containerd-shim-spin-v1",
+				path:   "/opt/rcm/bin/containerd-shim-spin-v1",
 				sha256: nil,
 			},
 			true,
