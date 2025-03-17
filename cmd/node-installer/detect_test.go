@@ -87,7 +87,7 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Path      string
 						AssetPath string
-					}{"/opt/kwasm", "/assets"},
+					}{"/opt/rcm", "/assets"},
 					struct{ RootPath string }{""},
 				},
 				tests.FixtureFs("../../testdata/node-installer/containerd/default-and-k0s-configs"),
