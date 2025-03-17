@@ -4,9 +4,9 @@ on:
   workflow_call:
 
 env:
-  K8S_VERSION: v1.31.2
-  MICROK8S_CHANNEL: 1.31/stable
-  SHIM_SPIN_VERSION: v0.17.0
+  K8S_VERSION: v1.32.2
+  MICROK8S_CHANNEL: 1.32/stable
+  SHIM_SPIN_VERSION: v0.18.0
   DOCKER_BUILD_SUMMARY: false
 
 jobs:
@@ -85,7 +85,7 @@ jobs:
       - name: Install helm
         uses: Azure/setup-helm@v4
         with:
-          version: v3.15.4
+          version: v3.17.2
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -102,11 +102,13 @@ jobs:
         uses: helm/kind-action@v1
         with:
           cluster_name: kind
+          # Versions lower than v0.27.0 encounter https://github.com/kubernetes-sigs/kind/issues/3795
+          version: v0.27.0
           node_image: kindest/node:${{ env.K8S_VERSION }}
 
       - name: Create minikube cluster
         if: matrix.config.type == 'minikube'
-        uses: medyagh/setup-minikube@v0.0.18
+        uses: medyagh/setup-minikube@v0.0.19
         with:
           container-runtime: containerd
           kubernetes-version: ${{ env.K8S_VERSION }}
@@ -122,7 +124,7 @@ jobs:
         uses: AbsaOSS/k3d-action@v2
         with:
           cluster-name: k3s-default
-          k3d-version: v5.7.4
+          k3d-version: v5.8.3
           args: |
             --image docker.io/rancher/k3s:${{ env.K8S_VERSION }}-k3s1
 
@@ -187,7 +189,8 @@ jobs:
           # Note: there may be multiple pods pending fix in https://github.com/spinkube/runtime-class-manager/issues/140
           install_pod=$(kubectl get pods -n rcm --no-headers -o name | awk '{if ($1 ~ "-spin-v2-install") print $0}' | tail -n 1)
           kubectl describe -n rcm $install_pod || true
-          kubectl logs -n rcm $install_pod || true
+          kubectl logs -n rcm -c downloader $install_pod || true
+          kubectl logs -n rcm -c provisioner $install_pod || true
 
           # RCM pod logs
           kubectl logs -n rcm -l app.kubernetes.io/name=runtime-class-manager || true
