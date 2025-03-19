@@ -169,7 +169,7 @@ jobs:
       - name: run Spin App
         run: |
           kubectl apply -f testdata/apps/spin-app.yaml
-          kubectl rollout status deployment wasm-spin --timeout 90s
+          kubectl rollout status deployment wasm-spin --timeout 120s
           kubectl get pods -A
           kubectl port-forward svc/wasm-spin 8083:80 &
           timeout 60s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'

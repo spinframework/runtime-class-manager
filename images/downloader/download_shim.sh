@@ -25,7 +25,15 @@ mkdir -p /assets
 
 # overwrite default name of shim binary; use the name of shim resource instead
 # to enable installing multiple versions of the same shim
-curl -sL "${SHIM_LOCATION}"  | tar --transform "s/containerd-shim-.*/containerd-shim-${SHIM_NAME}/" -xzf - -C /assets
+curl -sLo "containerd-shim-${SHIM_NAME}" "${SHIM_LOCATION}"
+ls -lah "containerd-shim-${SHIM_NAME}"
+
+log "$(curl --version)" "INFO"
+log "$(tar --version)" "INFO"
+log "md5sum: $(md5sum containerd-shim-${SHIM_NAME})" "INFO"
+log "sha256sum: $(sha256sum containerd-shim-${SHIM_NAME})" "INFO"
+
+tar -xzf "containerd-shim-${SHIM_NAME}" -C /assets
 log "download successful:" "INFO"
 
 ls -lah /assets
