@@ -1,9 +1,10 @@
 module github.com/spinframework/runtime-class-manager
 
 go 1.24.1
+
 require (
 	github.com/mitchellh/go-ps v1.0.0
-	github.com/onsi/ginkgo/v2 v2.23.0
+	github.com/onsi/ginkgo/v2 v2.23.1
 	github.com/onsi/gomega v1.36.2
 	github.com/prometheus/common v0.63.0
 	github.com/rs/zerolog v1.33.0
