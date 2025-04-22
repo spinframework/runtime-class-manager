@@ -201,3 +201,58 @@ func TestConfig_RemoveRuntime(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateConfig_ContainerdVersions(t *testing.T) {
+	type fields struct {
+		hostFs     afero.Fs
+		configPath string
+	}
+	type args struct {
+		shimPath string
+	}
+	tests := []struct {
+		name            string
+		fields          fields
+		args            args
+		wantErr         bool
+		wantFileContent string
+	}{
+		{"containerd 1.x", fields{
+			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/1.x"),
+			configPath: "/etc/containerd/config.toml",
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, false, `version = 2
+# RCM runtime config for spin-v1
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.spin-v1]
+runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"
+`},
+		{"containerd 2.x", fields{
+			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/2.x"),
+			configPath: "/etc/containerd/config.toml",
+		}, args{"/opt/rcm/bin/containerd-shim-spin-v1"}, false, `version = 3
+# RCM runtime config for spin-v1
+[plugins."io.containerd.cri.v1.runtime".containerd.runtimes.spin-v1]
+runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"
+`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &Config{
+				hostFs:     tt.fields.hostFs,
+				configPath: tt.fields.configPath,
+			}
+			err := c.AddRuntime(tt.args.shimPath)
+
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+
+			gotContent, err := afero.ReadFile(c.hostFs, c.configPath)
+			require.NoError(t, err)
+
+			assert.Equal(t, tt.wantFileContent, string(gotContent))
+		})
+	}
+}

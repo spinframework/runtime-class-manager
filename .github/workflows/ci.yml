@@ -20,6 +20,9 @@ jobs:
   helm_install_smoke_test:
     uses: ./.github/workflows/helm-chart-smoketest.yml
 
+  helm_node_scaling_test:
+    uses: ./.github/workflows/helm-chart-node-scaling-test.yml
+
   unit_tests:
     name: Test
     runs-on: ubuntu-latest

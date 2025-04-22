@@ -4,12 +4,9 @@ on:
   workflow_call:
 
 env:
-  # TODO: bump to a more recent K8S_VERSION once rcm supports containerd 2.0+
-  # see https://github.com/spinframework/runtime-class-manager/issues/371
-  # For k3d in particular, containerd 2.0 is used starting with k3s image tag v1.32.2-k3s1
-  K8S_VERSION: v1.32.1
+  K8S_VERSION: v1.32.3
   MICROK8S_CHANNEL: 1.32/stable
-  SHIM_SPIN_VERSION: v0.18.0
+  SHIM_SPIN_VERSION: v0.19.0
   DOCKER_BUILD_SUMMARY: false
 
 jobs:

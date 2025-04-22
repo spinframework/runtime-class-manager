@@ -49,8 +49,6 @@ func (c *Config) AddRuntime(shimPath string) error {
 	runtimeName := shim.RuntimeName(path.Base(shimPath))
 	l := slog.With("runtime", runtimeName)
 
-	cfg := generateConfig(shimPath, runtimeName)
-
 	// Containerd config file needs to exist, otherwise return the error
 	data, err := afero.ReadFile(c.hostFs, c.configPath)
 	if err != nil {
@@ -62,6 +60,8 @@ func (c *Config) AddRuntime(shimPath string) error {
 		l.Info("runtime config already exists, skipping")
 		return nil
 	}
+
+	cfg := generateConfig(shimPath, runtimeName, data)
 
 	// Open file in append mode
 	file, err := c.hostFs.OpenFile(c.configPath, os.O_APPEND|os.O_WRONLY, 0o644) //nolint:mnd // file permissions
@@ -83,8 +83,6 @@ func (c *Config) RemoveRuntime(shimPath string) (changed bool, err error) {
 	runtimeName := shim.RuntimeName(path.Base(shimPath))
 	l := slog.With("runtime", runtimeName)
 
-	cfg := generateConfig(shimPath, runtimeName)
-
 	// Containerd config file needs to exist, otherwise return the error
 	data, err := afero.ReadFile(c.hostFs, c.configPath)
 	if err != nil {
@@ -96,6 +94,8 @@ func (c *Config) RemoveRuntime(shimPath string) (changed bool, err error) {
 		l.Warn("runtime config does not exist, skipping")
 		return false, nil
 	}
+
+	cfg := generateConfig(shimPath, runtimeName, data)
 
 	// Convert the file data to a string and replace the target string with an empty string.
 	modifiedData := strings.ReplaceAll(string(data), cfg, "")
@@ -113,10 +113,17 @@ func (c *Config) RestartRuntime() error {
 	return c.restarter.Restart()
 }
 
-func generateConfig(shimPath string, runtimeName string) string {
+func generateConfig(shimPath string, runtimeName string, configData []byte) string {
+	// Config domain for containerd 1.0 (config version 2)
+	domain := "io.containerd.grpc.v1.cri"
+	if strings.Contains(string(configData), "version = 3") {
+		// Config domain for containerd 2.0 (config version 3)
+		domain = "io.containerd.cri.v1.runtime"
+	}
+
 	return fmt.Sprintf(`
 # RCM runtime config for %s
-[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.%s]
+[plugins."%s".containerd.runtimes.%s]
 runtime_type = "%s"
-`, runtimeName, runtimeName, shimPath)
+`, runtimeName, domain, runtimeName, shimPath)
 }

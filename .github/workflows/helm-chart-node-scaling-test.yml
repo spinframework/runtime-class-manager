@@ -1,0 +1,149 @@
+name: Helm Node Scaling Test
+
+on:
+  workflow_call:
+
+env:
+  SHIM_SPIN_VERSION: v0.19.0
+  DOCKER_BUILD_SUMMARY: false
+
+jobs:
+  helm-node-scaling-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install helm
+        uses: Azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build RCM
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+          tags: |
+            runtime-class-manager:chart-test
+
+      - name: Build node installer
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./images/installer/Dockerfile
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+          tags: |
+            node-installer:chart-test
+
+      - name: Build shim downloader
+        uses: docker/build-push-action@v6
+        with:
+          context: ./images/downloader
+          file: ./images/downloader/Dockerfile
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+          tags: |
+            shim-downloader:chart-test
+
+      - name: create kind config
+        run: |
+          cat << EOF > kind-config.yaml
+            kind: Cluster
+            apiVersion: kind.x-k8s.io/v1alpha4
+            nodes:
+            - role: control-plane
+            - role: worker
+              labels:
+                spin: true
+          EOF
+
+      - name: fetch kindscaler script
+        run: |
+          curl -so kindscaler.sh https://raw.githubusercontent.com/lobuhi/kindscaler/refs/heads/main/kindscaler.sh
+          chmod +x kindscaler.sh
+
+      - name: create kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: kind
+          config: kind-config.yaml
+
+      - name: import images into kind cluster
+        run: |
+          kind load docker-image runtime-class-manager:chart-test
+          kind load docker-image node-installer:chart-test
+          kind load docker-image shim-downloader:chart-test
+
+      - name: helm install runtime-class-manager
+        run: |
+          helm install rcm \
+            --namespace rcm \
+            --create-namespace \
+            --debug \
+            --set image.repository=runtime-class-manager \
+            --set image.tag=chart-test \
+            --set rcm.nodeInstallerImage.repository=node-installer \
+            --set rcm.nodeInstallerImage.tag=chart-test \
+            --set rcm.shimDownloaderImage.repository=shim-downloader \
+            --set rcm.shimDownloaderImage.tag=chart-test \
+            deploy/helm
+
+      - name: apply Spin shim
+        run: |
+          # Ensure shim binary is compatible with runner arch
+          yq -i '.spec.fetchStrategy.anonHttp.location = "https://github.com/spinkube/containerd-shim-spin/releases/download/${{ env.SHIM_SPIN_VERSION }}/containerd-shim-spin-v2-linux-x86_64.tar.gz"' \
+            config/samples/test_shim_spin.yaml
+          kubectl apply -f config/samples/test_shim_spin.yaml
+
+      - name: verify shim is installed into one node
+        run: |
+          timeout 1m bash -c 'until [[ "$(kubectl get node -l spin=true -l spin-v2=provisioned -o name | wc -l)" == "1" ]]; do sleep 2; done'
+          timeout 1m bash -c 'until [[ "$(kubectl get shim.runtime.spinkube.dev/spin-v2 -o json | jq -r '.status.nodesReady')" == "1" ]]; do sleep 2; done'
+
+      - name: scale kind worker nodes to 2
+        run: ./kindscaler.sh kind -r worker -c 1
+
+      - name: re-import images into kind cluster, for new node
+        run: |
+          kind load docker-image runtime-class-manager:chart-test
+          kind load docker-image node-installer:chart-test
+          kind load docker-image shim-downloader:chart-test
+
+      - name: verify shim is installed into two nodes
+        run: |
+          timeout 1m bash -c 'until [[ "$(kubectl get node -l spin=true -l spin-v2=provisioned -o name | wc -l)" == "2" ]]; do sleep 2; done'
+          timeout 1m bash -c 'until [[ "$(kubectl get shim.runtime.spinkube.dev/spin-v2 -o json | jq -r '.status.nodesReady')" == "2" ]]; do sleep 2; done'
+
+      - name: delete Spin Shim
+        run: kubectl delete -f config/samples/test_shim_spin.yaml
+
+      - name: verify shim is uninstalled from both nodes
+        run: |
+          timeout 1m bash -c 'until [[ "$(kubectl get node -l spin=true -l spin-v2=provisioned -o name | wc -l)" == "0" ]]; do sleep 2; done'
+          timeout 1m bash -c 'until ! kubectl get shims.runtime.spinkube.dev/spin-v2; do sleep 2; done'
+
+      - name: debug
+        if: failure()
+        run: |
+          kubectl get pods -A
+          kubectl describe shim spin-v2
+          kubectl describe runtimeclass wasmtime-spin-v2
+          kubectl describe -n rcm pod -l job-name=kind-worker-spin-v2-install || true
+          kubectl logs -n rcm -l app.kubernetes.io/name=runtime-class-manager || true
+          kubectl describe -n rcm pod -l app.kubernetes.io/name=runtime-class-manager || true
+          kubectl describe nodes
