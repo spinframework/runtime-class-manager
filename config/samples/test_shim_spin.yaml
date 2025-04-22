@@ -15,7 +15,7 @@ spec:
   fetchStrategy:
     type: anonymousHttp
     anonHttp:
-      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.15.1/containerd-shim-spin-v2-linux-aarch64.tar.gz"
+      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.19.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
 
   runtimeClass:
     # Note: this name is used by the Spin Operator project as its default:
