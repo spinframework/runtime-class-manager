@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -457,6 +458,19 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 			},
 		},
 	}
+
+	if shim.Spec.RuntimeOptions != nil {
+		optionsJSON, err := json.Marshal(shim.Spec.RuntimeOptions)
+		if err != nil {
+			log.Error().Msgf("Unable to marshal runtime options: %s", err)
+		} else {
+			job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+				Name:  "RUNTIME_OPTIONS",
+				Value: string(optionsJSON),
+			})
+		}
+	}
+
 	// set ttl for the installer job only if specified by the user
 	if ttlStr := os.Getenv("SHIM_NODE_INSTALLER_JOB_TTL"); ttlStr != "" {
 		if ttl, err := strconv.ParseInt(ttlStr, 10, 32); err == nil && ttl > 0 {
