@@ -17,6 +17,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -45,6 +46,16 @@ var uninstallCmd = &cobra.Command{
 
 		config.Runtime.ConfigPath = distro.ConfigPath
 
+		optionsJson := os.Getenv("RUNTIME_OPTIONS")
+		config.Runtime.Options = make(map[string]string)
+		if optionsJson != "" {
+			err := json.Unmarshal([]byte(optionsJson), &config.Runtime.Options)
+			if err != nil {
+				slog.Error("Error unmarshaling runtime options JSON", "error", err)
+				return
+			}
+		}
+
 		if err := RunUninstall(config, rootFs, hostFs, distro.Restarter); err != nil {
 			slog.Error("failed to uninstall", "error", err)
 			os.Exit(1)
@@ -61,7 +72,7 @@ func RunUninstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.R
 	shimName := config.Runtime.Name
 	runtimeName := path.Join(config.RCM.Path, "bin", shimName)
 
-	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter)
+	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter, config.Runtime.Options)
 	shimConfig := shim.NewConfig(rootFs, hostFs, config.RCM.AssetPath, config.RCM.Path)
 
 	binPath, err := shimConfig.Uninstall(shimName)

@@ -17,6 +17,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -48,6 +49,16 @@ var installCmd = &cobra.Command{
 		if err = distro.Setup(preset.Env{ConfigPath: distro.ConfigPath, HostFs: hostFs}); err != nil {
 			slog.Error("failed to run distro setup", "error", err)
 			os.Exit(1)
+		}
+
+		optionsJson := os.Getenv("RUNTIME_OPTIONS")
+		config.Runtime.Options = make(map[string]string)
+		if optionsJson != "" {
+			err := json.Unmarshal([]byte(optionsJson), &config.Runtime.Options)
+			if err != nil {
+				slog.Error("Error unmarshaling runtime options JSON", "error", err)
+				return
+			}
 		}
 
 		if err := RunInstall(config, rootFs, hostFs, distro.Restarter); err != nil {
@@ -82,7 +93,7 @@ func RunInstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Res
 		config.RCM.AssetPath = path.Dir(config.RCM.AssetPath)
 	}
 
-	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter)
+	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter, config.Runtime.Options)
 	shimConfig := shim.NewConfig(rootFs, hostFs, config.RCM.AssetPath, config.RCM.Path)
 
 	anythingChanged := false
