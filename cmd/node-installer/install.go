@@ -17,6 +17,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log/slog"
@@ -47,6 +48,12 @@ var installCmd = &cobra.Command{
 		config.Runtime.ConfigPath = distro.ConfigPath
 		if err = distro.Setup(preset.Env{ConfigPath: distro.ConfigPath, HostFs: hostFs}); err != nil {
 			slog.Error("failed to run distro setup", "error", err)
+			os.Exit(1)
+		}
+
+		config.Runtime.Options, err = RuntimeOptions()
+		if err != nil {
+			slog.Error("failed to get runtime options", "error", err)
 			os.Exit(1)
 		}
 
@@ -82,7 +89,7 @@ func RunInstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Res
 		config.RCM.AssetPath = path.Dir(config.RCM.AssetPath)
 	}
 
-	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter)
+	containerdConfig := containerd.NewConfig(hostFs, config.Runtime.ConfigPath, restarter, config.Runtime.Options)
 	shimConfig := shim.NewConfig(rootFs, hostFs, config.RCM.AssetPath, config.RCM.Path)
 
 	anythingChanged := false
@@ -116,4 +123,17 @@ func RunInstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Res
 	}
 
 	return nil
+}
+
+func RuntimeOptions() (map[string]string, error) {
+	runtimeOptions := make(map[string]string)
+	optionsJSON := os.Getenv("RUNTIME_OPTIONS")
+	config.Runtime.Options = make(map[string]string)
+	if optionsJSON != "" {
+		err := json.Unmarshal([]byte(optionsJSON), &runtimeOptions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal runtime options JSON %s: %w", optionsJSON, err)
+		}
+	}
+	return runtimeOptions, nil
 }

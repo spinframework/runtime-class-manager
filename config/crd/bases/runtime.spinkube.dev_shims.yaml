@@ -95,10 +95,18 @@ spec:
                 - handler
                 - name
                 type: object
+              runtimeOptions:
+                additionalProperties:
+                  type: string
+                description: |-
+                  RuntimeOptions is a map of containerd runtime options for the shim plugin.
+                  See an example of configuring cgroup driver via runtime options: https://github.com/containerd/containerd/blob/main/docs/cri/config.md#cgroup-driver
+                type: object
             required:
             - fetchStrategy
             - rolloutStrategy
             - runtimeClass
+            - runtimeOptions
             type: object
           status:
             description: ShimStatus defines the observed state of Shim
