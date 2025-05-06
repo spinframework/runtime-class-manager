@@ -17,7 +17,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
@@ -46,14 +45,10 @@ var uninstallCmd = &cobra.Command{
 
 		config.Runtime.ConfigPath = distro.ConfigPath
 
-		optionsJson := os.Getenv("RUNTIME_OPTIONS")
-		config.Runtime.Options = make(map[string]string)
-		if optionsJson != "" {
-			err := json.Unmarshal([]byte(optionsJson), &config.Runtime.Options)
-			if err != nil {
-				slog.Error("Error unmarshaling runtime options JSON", "error", err)
-				return
-			}
+		config.Runtime.Options, err = RuntimeOptions()
+		if err != nil {
+			slog.Error("failed to get runtime options", "error", err)
+			os.Exit(1)
 		}
 
 		if err := RunUninstall(config, rootFs, hostFs, distro.Restarter); err != nil {

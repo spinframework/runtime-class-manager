@@ -51,14 +51,10 @@ var installCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		optionsJson := os.Getenv("RUNTIME_OPTIONS")
-		config.Runtime.Options = make(map[string]string)
-		if optionsJson != "" {
-			err := json.Unmarshal([]byte(optionsJson), &config.Runtime.Options)
-			if err != nil {
-				slog.Error("Error unmarshaling runtime options JSON", "error", err)
-				return
-			}
+		config.Runtime.Options, err = RuntimeOptions()
+		if err != nil {
+			slog.Error("failed to get runtime options", "error", err)
+			os.Exit(1)
 		}
 
 		if err := RunInstall(config, rootFs, hostFs, distro.Restarter); err != nil {
@@ -120,6 +116,14 @@ func RunInstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Res
 		return nil
 	}
 
+	// Ensure D-Bus is installed and running if using systemd
+	if containerd.UsesSystemd() {
+		err = containerd.InstallDbus()
+		if err != nil {
+			return fmt.Errorf("failed to install D-Bus: %w", err)
+		}
+	}
+
 	slog.Info("restarting containerd")
 	err = containerdConfig.RestartRuntime()
 	if err != nil {
@@ -127,4 +131,17 @@ func RunInstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Res
 	}
 
 	return nil
+}
+
+func RuntimeOptions() (map[string]string, error) {
+	runtimeOptions := make(map[string]string)
+	optionsJSON := os.Getenv("RUNTIME_OPTIONS")
+	config.Runtime.Options = make(map[string]string)
+	if optionsJSON != "" {
+		err := json.Unmarshal([]byte(optionsJSON), &runtimeOptions)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal runtime options JSON %s: %w", optionsJSON, err)
+		}
+	}
+	return runtimeOptions, nil
 }

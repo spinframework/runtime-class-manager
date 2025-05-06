@@ -23,7 +23,7 @@ type Config struct {
 		// Options is a map of containerd runtime options for the shim plugin.
 		// See an example of the cgroup drive option here:
 		// https://github.com/containerd/containerd/blob/main/docs/cri/config.md#cgroup-driver
-		Options    map[string]string
+		Options map[string]string
 	}
 	RCM struct {
 		Path      string

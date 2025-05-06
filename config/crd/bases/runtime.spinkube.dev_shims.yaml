@@ -100,7 +100,7 @@ spec:
                   type: string
                 description: |-
                   RuntimeOptions is a map of containerd runtime options for the shim plugin.
-                  Read more here: https://github.com/containerd/containerd/blob/main/docs/cri/config.md#cgroup-driver
+                  See an example of configuring cgroup driver via runtime options: https://github.com/containerd/containerd/blob/main/docs/cri/config.md#cgroup-driver
                 type: object
             required:
             - fetchStrategy

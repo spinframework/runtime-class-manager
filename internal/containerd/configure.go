@@ -130,12 +130,12 @@ runtime_type = "%s"
 `, runtimeName, domain, runtimeName, shimPath)
 	// Add runtime options if any are provided
 	if len(runtimeOptions) > 0 {
-		options := fmt.Sprintf(`[plugins."%s".containerd.runtimes."%s".options]`, domain, runtimeName)
+		options := fmt.Sprintf(`[plugins."%s".containerd.runtimes.%s.options]`, domain, runtimeName)
 		for k, v := range runtimeOptions {
 			options += fmt.Sprintf(`
-			%s = "%s"\n`, k, v)
+%s = %s`, k, v)
 		}
-		runtimeConfiguration += "\n" + options
+		runtimeConfiguration += options
 	}
 	return runtimeConfiguration
 }
