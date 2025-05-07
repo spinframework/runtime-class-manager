@@ -36,6 +36,15 @@ func NewRestarter() Restarter {
 }
 
 func (c restarter) Restart() error {
+	// To make sure any runtime options are applied, ensure D-Bus is
+	// installed and running if using systemd
+	if UsesSystemd() {
+		err := InstallDbus()
+		if err != nil {
+			return fmt.Errorf("failed to install D-Bus: %w", err)
+		}
+	}
+
 	pid, err := getPid()
 	if err != nil {
 		return err

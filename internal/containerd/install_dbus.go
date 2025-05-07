@@ -29,7 +29,7 @@ func InstallDbus() error {
 		slog.Info("D-Bus is already installed and running")
 		return nil
 	}
-	slog.Info("Installing D-Bus")
+	slog.Info("installing D-Bus")
 	whichApt := nsenterCmd("which", "apt-get")
 	whichYum := nsenterCmd("which", "yum")
 	whichDnf := nsenterCmd("which", "dnf")
@@ -63,7 +63,7 @@ func InstallDbus() error {
 		return nil
 	}
 
-	slog.Info("Restarting D-Bus")
+	slog.Info("restarting D-Bus")
 	cmd = nsenterCmd("systemctl", "restart", "dbus")
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to restart D-Bus: %w", err)
