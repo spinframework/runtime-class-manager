@@ -380,6 +380,8 @@ func (sr *ShimReconciler) setOperationConfiguration(shim *rcmv1.Shim, opConfig *
 }
 
 // createJobManifest creates a Job manifest for a Shim.
+//
+//nolint:funlen // function is longer due to scaffolding an entire K8s Job manifest
 func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node, operation string) (*batchv1.Job, error) {
 	opConfig := opConfig{
 		operation:  operation,
@@ -459,8 +461,8 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 		},
 	}
 
-	if shim.Spec.RuntimeOptions != nil {
-		optionsJSON, err := json.Marshal(shim.Spec.RuntimeOptions)
+	if shim.Spec.ContainerdRuntimeOptions != nil {
+		optionsJSON, err := json.Marshal(shim.Spec.ContainerdRuntimeOptions)
 		if err != nil {
 			log.Error().Msgf("Unable to marshal runtime options: %s", err)
 		} else {

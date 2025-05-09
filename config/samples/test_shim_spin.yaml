@@ -17,7 +17,7 @@ spec:
     anonHttp:
       location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.19.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
 
-  runtimeOptions:
+  containerdRuntimeOptions:
     SystemdCgroup: "true"
 
   runtimeClass:

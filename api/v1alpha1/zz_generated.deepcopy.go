@@ -174,8 +174,8 @@ func (in *ShimSpec) DeepCopyInto(out *ShimSpec) {
 	out.FetchStrategy = in.FetchStrategy
 	out.RuntimeClass = in.RuntimeClass
 	out.RolloutStrategy = in.RolloutStrategy
-	if in.RuntimeOptions != nil {
-		in, out := &in.RuntimeOptions, &out.RuntimeOptions
+	if in.ContainerdRuntimeOptions != nil {
+		in, out := &in.ContainerdRuntimeOptions, &out.ContainerdRuntimeOptions
 		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val

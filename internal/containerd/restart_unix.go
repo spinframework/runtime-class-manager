@@ -40,7 +40,7 @@ func NewDefaultRestarter() Restarter {
 
 func (c defaultRestarter) Restart() error {
 	// If listing systemd units succeeds, prefer systemctl restart; otherwise kill pid
-	if _, err := listSystemdUnits(); err == nil {
+	if _, err := ListSystemdUnits(); err == nil {
 		out, err := nsenterCmd("systemctl", "restart", "containerd").CombinedOutput()
 		slog.Debug(string(out))
 		if err != nil {
@@ -67,7 +67,7 @@ type K0sRestarter struct{}
 func (c K0sRestarter) Restart() error {
 	// First, collect systemd units to determine which mode k0s is running in, eg
 	// k0sworker or k0scontroller
-	units, err := listSystemdUnits()
+	units, err := ListSystemdUnits()
 	if err != nil {
 		return fmt.Errorf("unable to list systemd units: %w", err)
 	}
@@ -88,7 +88,7 @@ func (c K3sRestarter) Restart() error {
 	// This restarter will be used both for stock K3s distros, which use systemd as well as K3d, which does not.
 
 	// If listing systemd units succeeds, prefer systemctl restart; otherwise kill pid
-	if _, err := listSystemdUnits(); err == nil {
+	if _, err := ListSystemdUnits(); err == nil {
 		out, err := nsenterCmd("systemctl", "restart", "k3s").CombinedOutput()
 		slog.Debug(string(out))
 		if err != nil {
@@ -130,7 +130,7 @@ type RKE2Restarter struct{}
 func (c RKE2Restarter) Restart() error {
 	// First, collect systemd units to determine which mode rke2 is running in, eg
 	// rke2-agent or rke2-server
-	units, err := listSystemdUnits()
+	units, err := ListSystemdUnits()
 	if err != nil {
 		return fmt.Errorf("unable to list systemd units: %w", err)
 	}
@@ -145,7 +145,7 @@ func (c RKE2Restarter) Restart() error {
 	return nil
 }
 
-func listSystemdUnits() ([]byte, error) {
+func ListSystemdUnits() ([]byte, error) {
 	return nsenterCmd("systemctl", "list-units", "--type", "service").CombinedOutput()
 }
 

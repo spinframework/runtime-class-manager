@@ -116,6 +116,14 @@ func RunInstall(config Config, rootFs, hostFs afero.Fs, restarter containerd.Res
 		return nil
 	}
 
+	// Ensure D-Bus is installed and running if using systemd
+	if _, err := containerd.ListSystemdUnits(); err == nil {
+		err = containerd.InstallDbus()
+		if err != nil {
+			return fmt.Errorf("failed to install D-Bus: %w", err)
+		}
+	}
+
 	slog.Info("restarting containerd")
 	err = containerdConfig.RestartRuntime()
 	if err != nil {
