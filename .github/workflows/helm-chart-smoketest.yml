@@ -158,13 +158,11 @@ jobs:
       - name: label nodes
         run: kubectl label node --all spin=true
 
-      # MicroK8s runs directly on the host, so both the host's containerd process and MicroK8s' would
-      # otherwise be detected by runtime-class-manager. As of writing, rcm will fail if more than one
-      # containerd process is detected when attempting to restart. So, we stop the host process until
-      # the shim has been installed and the test app has been confirmed to run.
-      - name: stop system containerd
-        if: matrix.config.type == 'microk8s'
-        run: sudo systemctl stop containerd
+      - name: verify only one installer pod with Succeeded status
+        # TODO: provisioning on k3d still leads to the first installer pod finishing with provisioner status Unknown and phase Failed
+        if: matrix.config.type != 'k3d'
+        run: |
+          timeout 60s bash -c 'until [[ "$(kubectl -n rcm get $(kubectl get pods -n rcm --no-headers -o name | grep install | head -n1) -o jsonpath="{.status.phase}" 2>/dev/null)" == "Succeeded" ]]; do sleep 2; done'
 
       - name: run Spin App
         run: |
@@ -186,7 +184,7 @@ jobs:
           kubectl describe runtimeclass wasmtime-spin-v2
 
           # Get install pod logs
-          # Note: there may be multiple pods pending fix in https://github.com/spinkube/runtime-class-manager/issues/140
+          # Note: there may be multiple pods pending k3d fix for issue https://github.com/spinkube/runtime-class-manager/issues/140
           install_pod=$(kubectl get pods -n rcm --no-headers -o name | awk '{if ($1 ~ "-spin-v2-install") print $0}' | tail -n 1)
           kubectl describe -n rcm $install_pod || true
           kubectl logs -n rcm -c downloader $install_pod || true

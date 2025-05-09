@@ -24,7 +24,7 @@ type Env struct {
 var Default = Settings{
 	ConfigPath: "/etc/containerd/config.toml",
 	Setup:      func(_ Env) error { return nil },
-	Restarter:  containerd.NewRestarter(),
+	Restarter:  containerd.NewDefaultRestarter(),
 }
 
 func (s Settings) WithConfigPath(path string) Settings {
@@ -37,9 +37,16 @@ func (s Settings) WithSetup(setup func(env Env) error) Settings {
 	return s
 }
 
-var MicroK8s = Default.WithConfigPath("/var/snap/microk8s/current/args/containerd-template.toml")
+func (s Settings) WithRestarter(restarter containerd.Restarter) Settings {
+	s.Restarter = restarter
+	return s
+}
+
+var MicroK8s = Default.WithConfigPath("/var/snap/microk8s/current/args/containerd-template.toml").
+	WithRestarter(containerd.MicroK8sRestarter{})
 
 var RKE2 = Default.WithConfigPath("/var/lib/rancher/rke2/agent/etc/containerd/config.toml.tmpl").
+	WithRestarter(containerd.RKE2Restarter{}).
 	WithSetup(func(env Env) error {
 		_, err := env.HostFs.Stat(env.ConfigPath)
 		if err == nil {
@@ -75,9 +82,11 @@ var RKE2 = Default.WithConfigPath("/var/lib/rancher/rke2/agent/etc/containerd/co
 		return err
 	})
 
-var K3s = RKE2.WithConfigPath("/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl")
+var K3s = RKE2.WithConfigPath("/var/lib/rancher/k3s/agent/etc/containerd/config.toml.tmpl").
+	WithRestarter(containerd.K3sRestarter{})
 
 var K0s = Default.WithConfigPath("/etc/k0s/containerd.d/config.toml").
+	WithRestarter(containerd.K0sRestarter{}).
 	WithSetup(func(env Env) error {
 		_, err := env.HostFs.Stat(env.ConfigPath)
 		if err == nil {

@@ -10,7 +10,8 @@ COPY . .
 RUN CGO_ENABLED=0 go build -o rcm-node-installer ./cmd/node-installer
 RUN /app/rcm-node-installer -h
 
-FROM scratch
+# Using busybox instead of scratch so that the nsenter utility is present, as used in restarter logic
+FROM busybox:1.37
 COPY --from=builder /app/rcm-node-installer /rcm-node-installer
 
 ENTRYPOINT ["/rcm-node-installer"]
