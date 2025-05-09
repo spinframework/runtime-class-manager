@@ -17,6 +17,9 @@ spec:
     anonHttp:
       location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.19.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
 
+  runtimeOptions:
+    SystemdCgroup: "true"
+
   runtimeClass:
     # Note: this name is used by the Spin Operator project as its default:
     # https://github.com/spinframework/spin-operator/blob/main/config/samples/spin-shim-executor.yaml

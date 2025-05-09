@@ -45,7 +45,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", preset.MicroK8s.ConfigPath},
+						Options    map[string]string
+					}{"containerd", preset.MicroK8s.ConfigPath, nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -64,7 +65,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", "/etc/containerd/not_found.toml"},
+						Options    map[string]string
+					}{"containerd", "/etc/containerd/not_found.toml", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -83,7 +85,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", ""},
+						Options    map[string]string
+					}{"containerd", "", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -102,7 +105,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", ""},
+						Options    map[string]string
+					}{"containerd", "", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -121,7 +125,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", ""},
+						Options    map[string]string
+					}{"containerd", "", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -140,7 +145,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", ""},
+						Options    map[string]string
+					}{"containerd", "", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -159,7 +165,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", ""},
+						Options    map[string]string
+					}{"containerd", "", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -178,7 +185,8 @@ func Test_DetectDistro(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", ""},
+						Options    map[string]string
+					}{"containerd", "", nil},
 					struct {
 						Path      string
 						AssetPath string
