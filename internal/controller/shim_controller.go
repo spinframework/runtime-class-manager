@@ -440,10 +440,6 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 								Name:  "HOST_ROOT",
 								Value: "/mnt/node-root",
 							},
-							{
-								Name:  "SHIM_FETCH_STRATEGY",
-								Value: "/mnt/node-root",
-							},
 						},
 						VolumeMounts: []corev1.VolumeMount{
 							{
