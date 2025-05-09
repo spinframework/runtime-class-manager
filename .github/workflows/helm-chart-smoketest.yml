@@ -108,10 +108,9 @@ jobs:
 
       - name: Create minikube cluster
         if: matrix.config.type == 'minikube'
-        uses: medyagh/setup-minikube@v0.0.19
-        with:
-          container-runtime: containerd
-          kubernetes-version: ${{ env.K8S_VERSION }}
+        run: |
+          docker build -t minikube-custom:v0.0.46-fixed -f ./images/test/Dockerfile.minikube-custom .
+          minikube start -p minikube --driver=docker --container-runtime=containerd --base-image="minikube-custom:v0.0.46-fixed" --kubernetes-version=${{ env.K8S_VERSION }}
 
       - name: Create microk8s cluster
         if: matrix.config.type == 'microk8s'
