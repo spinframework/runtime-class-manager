@@ -9,7 +9,7 @@ import (
 // and starts the service.
 // NOTE: this limits support to systems using systemctl to manage systemd.
 func InstallDbus() error {
-	cmd := nsenterCmd("systemctl", "is-active", "dbus", "--quiet")
+	cmd := nsenterCmd("systemctl", "start", "dbus", "--quiet")
 	if err := cmd.Run(); err == nil {
 		slog.Info("D-Bus is already installed and running")
 		return nil
