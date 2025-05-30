@@ -103,7 +103,6 @@ spec:
                 - name
                 type: object
             required:
-            - containerdRuntimeOptions
             - fetchStrategy
             - rolloutStrategy
             - runtimeClass
