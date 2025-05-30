@@ -152,10 +152,18 @@ jobs:
 
       - name: apply Spin shim
         run: |
+          shim_file=config/samples/test_shim_spin.yaml
+          if [[ "${{ matrix.config.type }}" == "microk8s" ]]; then
+            cp $shim_file config/samples/test_shim_spin_microk8s.yaml
+            shim_file=config/samples/test_shim_spin_microk8s.yaml
+            # update file to remove the 'containerdRuntimeOptions' field
+            # as there is a known bug that MicroK8s containerd does not pass the options
+            yq -i 'del(.spec.containerdRuntimeOptions)' $shim_file
+          fi
           # Ensure shim binary is compatible with runner arch
           yq -i '.spec.fetchStrategy.anonHttp.location = "https://github.com/spinframework/containerd-shim-spin/releases/download/${{ env.SHIM_SPIN_VERSION }}/containerd-shim-spin-v2-linux-x86_64.tar.gz"' \
-            config/samples/test_shim_spin.yaml
-          kubectl apply -f config/samples/test_shim_spin.yaml
+            $shim_file
+          kubectl apply -f $shim_file
 
       - name: label nodes
         run: kubectl label node --all spin=true
