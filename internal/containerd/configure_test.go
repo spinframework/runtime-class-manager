@@ -118,6 +118,49 @@ runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"
 	}
 }
 
+func TestConfig_AddRuntimeOptions(t *testing.T) {
+	wantFileContent := `[plugins]
+  [plugins."io.containerd.monitor.v1.cgroups"]
+    no_prometheus = false
+  [plugins."io.containerd.service.v1.diff-service"]
+    default = ["walking"]
+  [plugins."io.containerd.gc.v1.scheduler"]
+    pause_threshold = 0.02
+    deletion_threshold = 0
+    mutation_threshold = 100
+    schedule_delay = 0
+    startup_delay = "100ms"
+  [plugins."io.containerd.runtime.v2.task"]
+    platforms = ["linux/amd64"]
+    sched_core = true
+  [plugins."io.containerd.service.v1.tasks-service"]
+    blockio_config_file = ""
+    rdt_config_file = ""
+
+# RCM runtime config for spin-v1
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.spin-v1]
+runtime_type = "/opt/rcm/bin/containerd-shim-spin-v1"
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.spin-v1.options]
+SystemdCgroup = true`
+	t.Run("plugin options added", func(t *testing.T) {
+		c := &Config{
+			hostFs:     tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-shim-config"),
+			configPath: "/etc/containerd/config.toml",
+			runtimeOptions: map[string]string{
+				"SystemdCgroup": "true",
+			},
+		}
+		err := c.AddRuntime("/opt/rcm/bin/containerd-shim-spin-v1")
+
+		require.NoError(t, err)
+
+		gotContent, err := afero.ReadFile(c.hostFs, c.configPath)
+		require.NoError(t, err)
+
+		assert.Equal(t, wantFileContent, string(gotContent))
+	})
+}
+
 func TestConfig_RemoveRuntime(t *testing.T) {
 	type fields struct {
 		hostFs     afero.Fs
