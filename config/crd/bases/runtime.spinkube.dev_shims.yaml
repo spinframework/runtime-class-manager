@@ -49,6 +49,13 @@ spec:
           spec:
             description: ShimSpec defines the desired state of Shim
             properties:
+              containerdRuntimeOptions:
+                additionalProperties:
+                  type: string
+                description: |-
+                  ContainerdRuntimeOptions is a map of containerd runtime options for the shim plugin.
+                  See an example of configuring cgroup driver via runtime options: https://github.com/containerd/containerd/blob/main/docs/cri/config.md#cgroup-driver
+                type: object
               fetchStrategy:
                 properties:
                   anonHttp:

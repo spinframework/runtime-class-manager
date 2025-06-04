@@ -49,7 +49,8 @@ func Test_RunInstall(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", "/etc/containerd/config.toml"},
+						Options    map[string]string
+					}{"containerd", "/etc/containerd/config.toml", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -68,7 +69,8 @@ func Test_RunInstall(t *testing.T) {
 					struct {
 						Name       string
 						ConfigPath string
-					}{"containerd", "/etc/containerd/config.toml"},
+						Options    map[string]string
+					}{"containerd", "/etc/containerd/config.toml", nil},
 					struct {
 						Path      string
 						AssetPath string
@@ -77,6 +79,27 @@ func Test_RunInstall(t *testing.T) {
 				},
 				tests.FixtureFs("../../testdata/node-installer"),
 				tests.FixtureFs("../../testdata/node-installer/containerd/existing-containerd-shim-config"),
+			},
+			false,
+		},
+		{
+			// TODO figure out how to test that the runtime options are set in the config
+			"new shim with runtime options",
+			args{
+				main.Config{
+					struct {
+						Name       string
+						ConfigPath string
+						Options    map[string]string
+					}{"containerd", "/etc/containerd/config.toml", map[string]string{"SystemdCgroup": "true"}},
+					struct {
+						Path      string
+						AssetPath string
+					}{"/opt/rcm", "/assets"},
+					struct{ RootPath string }{"/containerd/missing-containerd-shim-config"},
+				},
+				tests.FixtureFs("../../testdata/node-installer"),
+				tests.FixtureFs("../../testdata/node-installer/containerd/missing-containerd-shim-config"),
 			},
 			false,
 		},
