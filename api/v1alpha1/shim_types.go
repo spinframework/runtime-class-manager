@@ -26,6 +26,9 @@ type ShimSpec struct {
 	FetchStrategy   FetchStrategy     `json:"fetchStrategy"`
 	RuntimeClass    RuntimeClassSpec  `json:"runtimeClass"`
 	RolloutStrategy RolloutStrategy   `json:"rolloutStrategy"`
+	// ContainerdRuntimeOptions is a map of containerd runtime options for the shim plugin.
+	// See an example of configuring cgroup driver via runtime options: https://github.com/containerd/containerd/blob/main/docs/cri/config.md#cgroup-driver
+	ContainerdRuntimeOptions map[string]string `json:"containerdRuntimeOptions,omitempty"`
 }
 
 type FetchStrategy struct {

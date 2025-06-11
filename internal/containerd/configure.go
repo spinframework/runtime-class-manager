@@ -32,16 +32,18 @@ type Restarter interface {
 }
 
 type Config struct {
-	hostFs     afero.Fs
-	configPath string
-	restarter  Restarter
+	hostFs         afero.Fs
+	configPath     string
+	restarter      Restarter
+	runtimeOptions map[string]string
 }
 
-func NewConfig(hostFs afero.Fs, configPath string, restarter Restarter) *Config {
+func NewConfig(hostFs afero.Fs, configPath string, restarter Restarter, runtimeOptions map[string]string) *Config {
 	return &Config{
-		hostFs:     hostFs,
-		configPath: configPath,
-		restarter:  restarter,
+		hostFs:         hostFs,
+		configPath:     configPath,
+		restarter:      restarter,
+		runtimeOptions: runtimeOptions,
 	}
 }
 
@@ -61,7 +63,7 @@ func (c *Config) AddRuntime(shimPath string) error {
 		return nil
 	}
 
-	cfg := generateConfig(shimPath, runtimeName, data)
+	cfg := generateConfig(shimPath, runtimeName, c.runtimeOptions, data)
 
 	// Open file in append mode
 	file, err := c.hostFs.OpenFile(c.configPath, os.O_APPEND|os.O_WRONLY, 0o644) //nolint:mnd // file permissions
@@ -95,7 +97,7 @@ func (c *Config) RemoveRuntime(shimPath string) (changed bool, err error) {
 		return false, nil
 	}
 
-	cfg := generateConfig(shimPath, runtimeName, data)
+	cfg := generateConfig(shimPath, runtimeName, c.runtimeOptions, data)
 
 	// Convert the file data to a string and replace the target string with an empty string.
 	modifiedData := strings.ReplaceAll(string(data), cfg, "")
@@ -113,7 +115,7 @@ func (c *Config) RestartRuntime() error {
 	return c.restarter.Restart()
 }
 
-func generateConfig(shimPath string, runtimeName string, configData []byte) string {
+func generateConfig(shimPath string, runtimeName string, runtimeOptions map[string]string, configData []byte) string {
 	// Config domain for containerd 1.0 (config version 2)
 	domain := "io.containerd.grpc.v1.cri"
 	if strings.Contains(string(configData), "version = 3") {
@@ -121,9 +123,19 @@ func generateConfig(shimPath string, runtimeName string, configData []byte) stri
 		domain = "io.containerd.cri.v1.runtime"
 	}
 
-	return fmt.Sprintf(`
+	runtimeConfiguration := fmt.Sprintf(`
 # RCM runtime config for %s
 [plugins."%s".containerd.runtimes.%s]
 runtime_type = "%s"
 `, runtimeName, domain, runtimeName, shimPath)
+	// Add runtime options if any are provided
+	if len(runtimeOptions) > 0 {
+		options := fmt.Sprintf(`[plugins."%s".containerd.runtimes.%s.options]`, domain, runtimeName)
+		for k, v := range runtimeOptions {
+			options += fmt.Sprintf(`
+%s = %s`, k, v)
+		}
+		runtimeConfiguration += options
+	}
+	return runtimeConfiguration
 }
