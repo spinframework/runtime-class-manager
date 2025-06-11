@@ -122,7 +122,7 @@ docker-build-shim-downloader: ## Build the shim-downloader image.
 
 .PHONY: docker-build-node-installer
 docker-build-node-installer: ## Build the node-installer image.
-	$(CONTAINER_TOOL) build -t ${SHIM_DOWNLOADER_IMAGE} -f ./images/installer/Dockerfile .
+	$(CONTAINER_TOOL) build -t ${SHIM_NODE_INSTALLER_IMAGE} -f ./images/installer/Dockerfile .
 
 .PHONY: docker-build-all
 docker-build-all: docker-build docker-build-shim-downloader docker-build-node-installer
