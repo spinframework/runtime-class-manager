@@ -28,7 +28,7 @@ With runtime-class-manager running, you're ready to create one or more Wasm Shim
 For example, here we install the Spin shim:
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/spinkube/runtime-class-manager/refs/heads/main/config/samples/test_shim_spin.yaml
+kubectl apply -f https://raw.githubusercontent.com/spinframework/runtime-class-manager/refs/heads/main/config/samples/test_shim_spin.yaml
 ```
 
 Now when you annotate one or more nodes with a label corresponding to the `nodeSelector` declared in the Shim, runtime-class-manager will install the shim as well as create the corresponding Runtimeclass:

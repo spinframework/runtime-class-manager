@@ -194,7 +194,7 @@ jobs:
           kubectl describe runtimeclass wasmtime-spin-v2
 
           # Get install pod logs
-          # Note: there may be multiple pods pending k3d fix for issue https://github.com/spinkube/runtime-class-manager/issues/140
+          # Note: there may be multiple pods pending k3d fix for issue https://github.com/spinframework/runtime-class-manager/issues/393
           install_pod=$(kubectl get pods -n rcm --no-headers -o name | awk '{if ($1 ~ "-spin-v2-install") print $0}' | tail -n 1)
           kubectl describe -n rcm $install_pod || true
           kubectl logs -n rcm -c downloader $install_pod || true

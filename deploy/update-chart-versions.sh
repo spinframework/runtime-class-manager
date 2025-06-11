@@ -5,8 +5,8 @@ set -eou pipefail
 
 # Swap tag in for main for URLs if the version is vx.x.x*
 if [[ "${APP_VERSION}" =~ ^v[0-9]+.[0-9]+.[0-9]+(.*)? ]]; then
-  sed -i.bak -e "s%spinkube/runtime-class-manager/main%spinkube/runtime-class-manager/${APP_VERSION}%g" "${STAGING_DIR}/${CHART_NAME}-${CHART_VERSION}/README.md"
-  sed -i.bak -e "s%spinkube/runtime-class-manager/main%spinkube/runtime-class-manager/${APP_VERSION}%g" "${STAGING_DIR}/${CHART_NAME}-${CHART_VERSION}/templates/NOTES.txt"
+  sed -i.bak -e "s%spinframework/runtime-class-manager/main%spinframework/runtime-class-manager/${APP_VERSION}%g" "${STAGING_DIR}/${CHART_NAME}-${CHART_VERSION}/README.md"
+  sed -i.bak -e "s%spinframework/runtime-class-manager/main%spinframework/runtime-class-manager/${APP_VERSION}%g" "${STAGING_DIR}/${CHART_NAME}-${CHART_VERSION}/templates/NOTES.txt"
 fi
 
 ## Update Chart.yaml with CHART_VERSION and APP_VERSION
