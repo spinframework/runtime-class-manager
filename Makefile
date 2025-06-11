@@ -6,8 +6,14 @@ VERSION               ?= ${BRANCH}-${COMMIT_SHORT}
 PKG_LDFLAGS           := github.com/prometheus/common/version
 LDFLAGS               := -s -w -X ${PKG_LDFLAGS}.Version=${VERSION} -X ${PKG_LDFLAGS}.Revision=${COMMIT} -X ${PKG_LDFLAGS}.BuildDate=${DATE} -X ${PKG_LDFLAGS}.Branch=${BRANCH}
 
+REGISTRY  ?= ghcr.io/spinframework
+TAG       ?= latest
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= $(REGISTRY)/runtime-class-manager:$(TAG)
+# Defaults for the shim-downloader and node-installer images
+SHIM_DOWNLOADER_IMAGE := $(REGISTRY)/shim-downloader:$(TAG)
+SHIM_NODE_INSTALLER_IMAGE := $(REGISTRY)/node-installer:$(TAG)
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.28.0
 
@@ -98,18 +104,38 @@ build: manifests generate fmt vet golangci-build ## Build manager binary.
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	CONTROLLER_NAMESPACE="default" go run -ldflags "${LDFLAGS}" ./cmd/rcm/main.go
+	CONTROLLER_NAMESPACE="default" \
+	SHIM_DOWNLOADER_IMAGE="$(SHIM_DOWNLOADER_IMAGE)" \
+	SHIM_NODE_INSTALLER_IMAGE="$(SHIM_NODE_INSTALLER_IMAGE)" \
+		go run -ldflags "${LDFLAGS}" ./cmd/rcm/main.go
 
 # If you wish to build the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
 .PHONY: docker-build
-docker-build: ## Build docker image with the manager.
+docker-build: ## Build the runtime-class-manager image.
 	$(CONTAINER_TOOL) build -t ${IMG} .
 
+.PHONY: docker-build-shim-downloader
+docker-build-shim-downloader: ## Build the shim-downloader image.
+	$(CONTAINER_TOOL) build -t ${SHIM_DOWNLOADER_IMAGE} -f ./images/downloader/Dockerfile ./images/downloader
+
+.PHONY: docker-build-node-installer
+docker-build-node-installer: ## Build the node-installer image.
+	$(CONTAINER_TOOL) build -t ${SHIM_DOWNLOADER_IMAGE} -f ./images/installer/Dockerfile .
+
+.PHONY: docker-build-all
+docker-build-all: docker-build docker-build-shim-downloader docker-build-node-installer
+
 .PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	$(CONTAINER_TOOL) push ${IMG}
+docker-push: docker-push-runtime-class-manager ## Push the runtime-class-manager image.
+
+.PHONY: docker-push-%
+docker-push-%:
+	$(CONTAINER_TOOL) push $(REGISTRY)/$*:$(TAG)
+
+.PHONY: docker-push-all
+docker-push-all: docker-push docker-push-shim-downloader docker-push-node-installer
 
 # PLATFORMS defines the target platforms for the manager image be built to provide support to multiple
 # architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
