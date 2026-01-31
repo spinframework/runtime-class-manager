@@ -5,6 +5,14 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+  - update
+  - watch
+- apiGroups:
   - batch
   resources:
   - jobs
@@ -30,6 +38,16 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - node.k8s.io
+  resources:
+  - runtimeclasses
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - watch
 - apiGroups:
   - runtime.spinkube.dev
   resources:

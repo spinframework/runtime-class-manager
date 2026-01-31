@@ -70,6 +70,8 @@ type opConfig struct {
 //+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=runtime.spinkube.dev,resources=shims/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=nodes,verbs=list;watch;update
+//+kubebuilder:rbac:groups=node.k8s.io,resources=runtimeclasses,verbs=get;list;watch;create;patch
 
 // SetupWithManager sets up the controller with the Manager.
 func (sr *ShimReconciler) SetupWithManager(mgr ctrl.Manager) error {
