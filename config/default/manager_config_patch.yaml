@@ -8,3 +8,8 @@ spec:
     spec:
       containers:
       - name: manager
+        env:
+        # It should be modified as the manager's namespace is
+        #  modified by the kustomization.
+        - name: CONTROLLER_NAMESPACE
+          value: runtime-class-manager-system
