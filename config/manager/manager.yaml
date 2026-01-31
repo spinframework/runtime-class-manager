@@ -70,6 +70,15 @@ spec:
         - /manager
         args:
         - --leader-elect
+        env:
+        - name: CONTROLLER_NAMESPACE
+          value: system
+        - name: SHIM_DOWNLOADER_IMAGE
+          value: ghcr.io/spinframework/shim-downloader:latest
+        - name: SHIM_NODE_INSTALLER_IMAGE
+          value: ghcr.io/spinframework/node-installer:latest
+        - name: SHIM_MODE_INSTALLER_JOB_TTL
+          value: "0"
         image: controller:latest
         name: manager
         securityContext:
