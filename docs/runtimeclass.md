@@ -1,13 +1,11 @@
 ## RuntimeClass
 
-The Operator is designed to create a RuntimeClass for each shim. `spec.runtimeClass` configures the RuntimeClass that will be created.
+Runtime Class Manager is in charge of creating a [RuntimeClass](https://kubernetes.io/docs/concepts/containers/runtime-class) for each [Shim](./shim.md) resource created on the cluster.
+
+The `spec.runtimeClass` section of the Shim resource configures the RuntimeClass that will be created.
 
 * `spec.runtimeClass.name`: Name of the Kubernetes RuntimeClass
+  - This name should match what is expected by shim-specific operator(s) on the cluster
+  - For example, the [Spin Operator](https://github.com/spinframework/spin-operator) utilizes a [SpinAppExecutor](https://www.spinkube.dev/docs/reference/spin-app-executor/) resource
+    to run Spin Apps; the default RuntimeClass name it expects can be seen [here](https://github.com/spinframework/spin-operator/blob/main/config/samples/spin-shim-executor.yaml)
 * `spec.runtimeClass.handler`: Name of the shim as it is referenced in the containerd config
-
-**Discuss later:**
-
-- At this point in time `spec.RuntimeClass` is a mendatory field
-    - pro: it will make sure a RuntimeClass exist for the shim thats going to be installed
-    - con: possible that runtimeclass is created by other means
-- Should `spec.RuntimeClass.handler` be optional? Is it even required?
