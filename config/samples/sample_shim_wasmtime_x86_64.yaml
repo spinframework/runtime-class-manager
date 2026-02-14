@@ -1,0 +1,25 @@
+apiVersion: runtime.spinkube.dev/v1alpha1 
+kind: Shim
+metadata:
+  name: wasmtime-v1
+  labels:
+    app.kubernetes.io/name: wasmtime-v1
+    app.kubernetes.io/instance: wasmtime-v1
+    app.kubernetes.io/part-of: runtime-class-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: runtime-class-manager
+spec:
+  nodeSelector:
+    wasmtime: "true"
+
+  fetchStrategy:
+    type: anonymousHttp
+    anonHttp:
+      location: "https://github.com/containerd/runwasi/releases/download/containerd-shim-wasmtime%2Fv0.6.0/containerd-shim-wasmtime-x86_64-linux-musl.tar.gz"
+
+  runtimeClass:
+    name: wasmtime-v1
+    handler: wasmtime
+
+  rolloutStrategy:
+    type: recreate
