@@ -1,0 +1,34 @@
+apiVersion: runtime.spinkube.dev/v1alpha1 
+kind: Shim
+metadata:
+  name: spin-v2
+  labels:
+    app.kubernetes.io/name: spin-v2
+    app.kubernetes.io/instance: spin-v2
+    app.kubernetes.io/part-of: runtime-class-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: runtime-class-manager
+spec:
+  nodeSelector:
+    spin: "true"
+
+  fetchStrategy:
+    type: anonymousHttp
+    anonHttp:
+      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.22.0/containerd-shim-spin-v2-linux-x86_64.tar.gz"
+  # Each runtime can provide a set of containerd runtime options to be set in the containerd
+  # configuration file.
+  containerdRuntimeOptions:
+    # The following option to pass cgroup driver information is available to runwasi based runtimes.
+    # For runwasi, the default cgroup driver is cgroupfs. Failure to configure the correct cgroup
+    # driver for runwasi shims may result in pod metrics failing to propagate accurately.
+    SystemdCgroup: "true"
+
+  runtimeClass:
+    # Note: this name is used by the Spin Operator project as its default:
+    # https://github.com/spinframework/spin-operator/blob/main/config/samples/spin-shim-executor.yaml
+    name: wasmtime-spin-v2
+    handler: spin-v2
+
+  rolloutStrategy:
+    type: recreate

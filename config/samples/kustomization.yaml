@@ -4,4 +4,8 @@ resources:
 - test_shim_slight.yaml
 - test_shim_spin.yaml
 - test_shim_wws.yaml
+- sample_shim_spin_x86_64.yaml
+- sample_shim_spin_aarch64.yaml
+- sample_shim_wasmtime_x86_64.yaml
+- sample_shim_wasmtime_aarch64.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples
