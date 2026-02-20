@@ -33,13 +33,15 @@ log "$(tar --version)" "INFO"
 log "md5sum: $(md5sum containerd-shim-${SHIM_NAME})" "INFO"
 log "sha256sum: $(sha256sum containerd-shim-${SHIM_NAME})" "INFO"
 
-tar -xzf "containerd-shim-${SHIM_NAME}" -C /assets
+tar -xzf "containerd-shim-${SHIM_NAME}" -C /tmp
+# there may be multiple files in the archive; only copy the shim binary to /assets
+cp /tmp/containerd-shim-${SHIM_NAME} /assets
 log "download successful:" "INFO"
 
 # Verify SHA-256 if provided
 if [ -n "${SHIM_SHA256:-}" ]; then
     log "verifying SHA-256 digest..." "INFO"
-    if echo "${SHIM_SHA256}  containerd-shim-${SHIM_NAME}" | sha256sum -c -; then
+    if echo "${SHIM_SHA256} containerd-shim-${SHIM_NAME}" | sha256sum -c -; then
         log "SHA-256 verification passed" "INFO"
     else
         log "SHA-256 verification FAILED: expected ${SHIM_SHA256} for containerd-shim-${SHIM_NAME}" "ERROR"
