@@ -23,10 +23,27 @@ log "start downloading shim from  ${SHIM_LOCATION}..." "INFO"
 
 mkdir -p /assets
 
+num_retry=${NUM_RETRY:-3}
+sleep_duration=${SLEEP_DURATION:-2}
+
+for (( i=0; i < $num_retry+1; i++ ))
+do
+    if curl -sLo "containerd-shim-${SHIM_NAME}" "${SHIM_LOCATION}"
+    then
+        ls -lah "containerd-shim-${SHIM_NAME}"
+        break
+    elif [ $i -eq $num_retry ]
+    then
+        log "number of failed downloads reached max retry ${num_retry}" "ERROR"
+        exit 1
+    else
+        log "download failed. retry after sleep... (${i}/${num_retry})" "ERROR"
+        sleep $sleep_duration
+    fi
+done
+
 # overwrite default name of shim binary; use the name of shim resource instead
 # to enable installing multiple versions of the same shim
-curl -sLo "containerd-shim-${SHIM_NAME}" "${SHIM_LOCATION}"
-ls -lah "containerd-shim-${SHIM_NAME}"
 
 log "$(curl --version)" "INFO"
 log "$(tar --version)" "INFO"

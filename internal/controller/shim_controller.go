@@ -434,6 +434,18 @@ func (sr *ShimReconciler) setOperationConfiguration(shim *rcmv1.Shim, opConfig *
 				},
 			},
 		}}
+		if configMapName := os.Getenv("SHIM_DOWNLOADER_CONFIG_MAP"); configMapName != "" {
+			opConfig.initContainer[0].EnvFrom = []corev1.EnvFromSource{
+				{
+					ConfigMapRef: &corev1.ConfigMapEnvSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: configMapName,
+						},
+					},
+				},
+			}
+		}
+
 		opConfig.args = []string{
 			"install",
 			"-H",
