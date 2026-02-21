@@ -153,60 +153,96 @@ jobs:
             --set rcm.shimDownloaderImage.tag=chart-test \
             deploy/helm
 
-      - name: apply Spin shim
+      - name: apply shims
         run: |
-          shim_file=config/samples/test_shim_spin.yaml
-          if [[ "${{ matrix.config.type }}" == "microk8s" ]]; then
-            cp $shim_file config/samples/test_shim_spin_microk8s.yaml
-            shim_file=config/samples/test_shim_spin_microk8s.yaml
-            # update file to remove the 'containerdRuntimeOptions' field
-            # as there is a known bug that MicroK8s containerd does not pass the options
-            yq -i 'del(.spec.containerdRuntimeOptions)' $shim_file
-          fi
-          kubectl apply -f $shim_file
+          for shim_file in $(ls config/samples/sample_shim*); do
+            if [[ "${{ matrix.config.type }}" == "microk8s" ]]; then
+              cp $shim_file $shim_file.microk8s
+              shim_file=$shim_file.microk8s
+              # update file to remove the 'containerdRuntimeOptions' field
+              # as there is a known bug that MicroK8s containerd does not pass the options
+              yq -i 'del(.spec.containerdRuntimeOptions)' $shim_file
+            fi
+            kubectl apply -f $shim_file
+          done
 
-      - name: label nodes
-        run: kubectl label node --all spin=true
-
-      - name: verify only one installer pod with Succeeded status
-        # TODO: provisioning on k3d still leads to the first installer pod finishing with provisioner status Unknown and phase Failed
-        if: matrix.config.type != 'k3d'
+      - name: label nodes and wait for shim to be ready
         run: |
-          timeout 60s bash -c 'until [[ "$(kubectl -n rcm get $(kubectl get pods -n rcm --no-headers -o name | grep install | head -n1) -o jsonpath="{.status.phase}" 2>/dev/null)" == "Succeeded" ]]; do sleep 2; done'
+          for shim_file in $(ls config/samples/sample_shim*); do
+            label="$(cat $shim_file | yq '.spec.nodeSelector' | tr -d '"' | tr -d '[:space:]' | sed s/:/=/g)"
+            kubectl label node --all $label
 
-      - name: run Spin App
+            shim_name="$(cat $shim_file | yq '.metadata.name')"
+            # TODO: k3d can take a long round of failed install pods (exit code 6 when curling the artifact?)
+            # Once this behavior is diagnosed and resolved, we should be able to shorten this timeout substantially
+            timeout=600
+            SECONDS=0 # Reset the internal bash timer to 0
+            success=false
+
+            echo "Waiting for the $shim_name shim to be ready/installed..."
+
+            while [[ $SECONDS -lt $timeout ]]; do
+              # Fetch both nodes and nodesReady
+              read -r nodes nodesReady <<< $(kubectl get shim "$shim_name" \
+                -o jsonpath='{.status.nodes} {.status.nodesReady}' 2>/dev/null)
+
+              # Check to see if all nodes are ready
+              if [[ -n "$nodes" ]] && [[ -n "$nodesReady" ]] && [[ "$nodes" -eq "$nodesReady" ]]; then
+                echo "Success: all nodes have the $shim_name shim installed."
+                success=true
+                break
+              fi
+
+              sleep 2
+            done
+
+            if [[ "${success}" != "true" ]]; then
+              echo "Error: Timed out after ${timeout}s waiting for the $shim_name shim to be ready."
+              exit 1
+            fi
+          done
+
+      # TODO: unify testdata/apps to all model the same behavor, eg simple web server, etc
+      - name: run and verify spin app
         run: |
-          kubectl apply -f testdata/apps/spin-app.yaml
-          kubectl rollout status deployment wasm-spin --timeout 180s
-          kubectl get pods -A
-          kubectl port-forward svc/wasm-spin 8083:80 &
-          timeout 90s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
+          kubectl apply -f testdata/apps/spin-v2-app.yaml
+          kubectl rollout status deployment spin-v2-app --timeout 180s
+          kubectl port-forward svc/spin-v2-app 8083:80 &
+          timeout 60s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
 
-      - name: restart system containerd
-        if: matrix.config.type == 'microk8s'
-        run: sudo systemctl start containerd
+      - name: run and verify wasmtime app
+        run: |
+          kubectl apply -f testdata/apps/wasmtime-v1-app.yaml
+          kubectl rollout status deployment wasmtime-v1-app --timeout 180s
+          pod=$(kubectl get pod -l app=wasmtime-v1-app -o name)
+          timeout 60s bash -c 'until kubectl logs $1 | grep -q "This is a song that never ends."; do sleep 2; done' -- $pod
 
       - name: debug
         if: failure()
         run: |
           kubectl get pods -A
-          kubectl describe shim spin-v2
-          kubectl describe runtimeclass wasmtime-spin-v2
+          kubectl describe shims
+          kubectl describe runtimeclasses
 
           # Get install pod logs
           # Note: there may be multiple pods pending k3d fix for issue https://github.com/spinframework/runtime-class-manager/issues/393
-          install_pod=$(kubectl get pods -n rcm --no-headers -o name | awk '{if ($1 ~ "-spin-v2-install") print $0}' | tail -n 1)
-          kubectl describe -n rcm $install_pod || true
-          kubectl logs -n rcm -c downloader $install_pod || true
-          kubectl logs -n rcm -c provisioner $install_pod || true
+          for shim_file in $(ls config/samples/sample_shim*); do
+            shim_name="$(cat $shim_file | yq '.metadata.name')"
+            install_pods="$(kubectl get pods -n rcm --no-headers -o name | grep $shim_name-install)"
+            for pod in $install_pods; do
+              kubectl describe -n rcm $pod || true
+              kubectl logs -n rcm -c downloader $pod || true
+              kubectl logs -n rcm -c provisioner $pod || true
+            done
+          done
 
           # RCM pod logs
           kubectl logs -n rcm -l app.kubernetes.io/name=runtime-class-manager || true
           kubectl describe -n rcm pod -l app.kubernetes.io/name=runtime-class-manager || true
 
           # App logs
-          kubectl logs -l app=wasm-spin || true
-          kubectl describe pod -l app=wasm-spin || true
-
-      - name: Verify curl
-        run: curl localhost:8083/hello
+          for app_file in $(ls testdata/apps/*); do
+            app=$(cat $app_file | yq 'select(.kind == "Deployment") | .metadata.name')
+            kubectl logs -l app=$app || true
+            kubectl describe pod -l app=$app || true
+          done

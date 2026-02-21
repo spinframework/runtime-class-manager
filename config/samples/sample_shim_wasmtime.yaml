@@ -23,7 +23,7 @@ spec:
 
   runtimeClass:
     name: wasmtime-v1
-    handler: wasmtime
+    handler: wasmtime-v1
 
   rolloutStrategy:
     type: recreate

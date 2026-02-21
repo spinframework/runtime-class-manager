@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wasmtime-v1-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wasmtime-v1-app
+  template:
+    metadata:
+      labels:
+        app: wasmtime-v1-app
+    spec:
+      runtimeClassName: wasmtime-v1
+      containers:
+      - name: wasmtime-v1-app
+        image: ghcr.io/containerd/runwasi/wasi-demo-app:latest
