@@ -20,11 +20,12 @@ rcm:
   nodeInstallerJob:
     ttl: 0
   leaderElectEnabled: false
+  # shimDownloaderConfig generates a ConfigMap which sets a downloader container's variables. Since those variables have defaults, you don't need to enable it unless you want to customize them.
   shimDownloaderConfig:
     enabled: false
     configMapName: shim-downloader-config
     content:
-      numRetry: 10
+      numRetry: 3
       sleepDuration: 2
 
 imagePullSecrets: []
