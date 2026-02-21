@@ -49,6 +49,10 @@ spec:
             value: "{{ .Values.rcm.nodeInstallerImage.repository }}:{{ .Values.rcm.nodeInstallerImage.tag | default .Chart.AppVersion }}"
           - name: SHIM_NODE_INSTALLER_JOB_TTL
             value: "{{ .Values.rcm.nodeInstallerJob.ttl | default 0 }}"
+          {{- if .Values.rcm.shimDownloaderConfig.enabled }}
+          - name: SHIM_DOWNLOADER_CONFIG_MAP
+            value: "{{ .Values.rcm.shimDownloaderConfig.configMapName }}"
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -79,3 +83,13 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- if .Values.rcm.shimDownloaderConfig.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.rcm.shimDownloaderConfig.configMapName }}
+data:
+  NUM_RETRY: "{{ .Values.rcm.shimDownloaderConfig.content.numRetry }}"
+  SLEEP_DURATION: "{{ .Values.rcm.shimDownloaderConfig.content.sleepDuration }}"
+{{- end }}

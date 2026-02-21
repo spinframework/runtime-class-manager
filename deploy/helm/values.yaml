@@ -20,6 +20,12 @@ rcm:
   nodeInstallerJob:
     ttl: 0
   leaderElectEnabled: false
+  shimDownloaderConfig:
+    enabled: false
+    configMapName: shim-downloader-config
+    content:
+      numRetry: 10
+      sleepDuration: 2
 
 imagePullSecrets: []
 nameOverride: ""
