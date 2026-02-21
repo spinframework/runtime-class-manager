@@ -151,6 +151,8 @@ jobs:
             --set rcm.nodeInstallerImage.tag=chart-test \
             --set rcm.shimDownloaderImage.repository=shim-downloader \
             --set rcm.shimDownloaderImage.tag=chart-test \
+            --set rcm.shimDownloaderConfig.enabled=true \
+            --set rcm.shimDownloaderConfig.configMapName=configmap-test \
             deploy/helm
 
       - name: apply Spin shim
@@ -173,6 +175,10 @@ jobs:
         if: matrix.config.type != 'k3d'
         run: |
           timeout 60s bash -c 'until [[ "$(kubectl -n rcm get $(kubectl get pods -n rcm --no-headers -o name | grep install | head -n1) -o jsonpath="{.status.phase}" 2>/dev/null)" == "Succeeded" ]]; do sleep 2; done'
+
+      - name: verify configMap for shim-downloader is added
+        run: |
+          timeout 60s bash -c 'until [[ $(kubectl -n rcm get $(kubectl get pods -n rcm --no-headers -o name | grep install | head -n1) -o jsonpath="{.spec.initContainers[0].envFrom[0].configMapRef.name}" 2>/dev/null) == "configmap-test" ]]; do sleep 2; done'
 
       - name: run Spin App
         run: |
