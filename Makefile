@@ -132,7 +132,7 @@ docker-push: docker-push-runtime-class-manager ## Push the runtime-class-manager
 
 .PHONY: docker-push-%
 docker-push-%:
-	$(CONTAINER_TOOL) push $(REGISTRY)/$*:$(TAG)
+	$(CONTAINER_TOOL) push $(IMG)
 
 .PHONY: docker-push-all
 docker-push-all: docker-push docker-push-shim-downloader docker-push-node-installer
