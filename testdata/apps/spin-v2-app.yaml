@@ -2,16 +2,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wasm-spin
+  name: spin-v2-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wasm-spin
+      app: spin-v2-app
   template:
     metadata:
       labels:
-        app: wasm-spin
+        app: spin-v2-app
     spec:
       runtimeClassName: wasmtime-spin-v2
       containers:
@@ -22,11 +22,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: wasm-spin
+  name: spin-v2-app
 spec:
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
   selector:
-    app: wasm-spin
+    app: spin-v2-app
