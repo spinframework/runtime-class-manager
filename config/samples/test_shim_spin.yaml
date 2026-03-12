@@ -19,16 +19,16 @@ spec:
     type: anonymousHttp
     # platforms gets precedence over anonHttp, but multiple strategy types should be allowed.
     anonHttp:
-      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.22.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
+      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.23.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
     platforms:
       - os: linux
         arch: aarch64
-        location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.22.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
-        sha256: "5fde86c310b8b8ef4c1b19a04eece203f4c308f6fb42bfae3babd99d4c04006b"
+        location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.23.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
+        sha256: "a923f08d91c110d2cda29fbc380273e6d0a97aa0bab455c55f613c8d5a8bfbe4"
       - os: linux
         arch: x86_64
-        location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.22.0/containerd-shim-spin-v2-linux-x86_64.tar.gz"
-        sha256: "adeb94339c673f09cffe8c45c04f9b18d410f9375d1570b6d1939758b507d257"
+        location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.23.0/containerd-shim-spin-v2-linux-x86_64.tar.gz"
+        sha256: "eec8df96fa3a4fe5dbc57ffb706461692c055299dd6d22dff9444863a2a12281"
 
   # Each runtime can provide a set of containerd runtime options to be set in the containerd
   # configuration file.

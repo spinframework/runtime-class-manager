@@ -9,7 +9,7 @@ permissions:
 env:
   K8S_VERSION: v1.32.3
   MICROK8S_CHANNEL: 1.32/stable
-  SHIM_SPIN_VERSION: v0.22.0
+  SHIM_SPIN_VERSION: v0.23.0
   DOCKER_BUILD_SUMMARY: false
 
 jobs:
