@@ -20,6 +20,7 @@
 package containerd
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log/slog"
@@ -89,11 +90,25 @@ func (c K3sRestarter) Restart() error {
 	// This restarter will be used both for stock K3s distros, which use systemd as well as K3d, which does not.
 
 	// If listing systemd units succeeds, prefer systemctl restart; otherwise kill pid
-	if _, err := ListSystemdUnits(); err == nil {
-		out, err := nsenterCmd("systemctl", "restart", "k3s").CombinedOutput()
+	// First, collect systemd units to determine which k3s service to restart
+	// TODO: It appears the service name itself can be customized, so we may want to consider similar support
+	// See https://github.com/k3s-io/k3s/blob/main/install.sh
+	if units, err := ListSystemdUnits(); err == nil {
+		var service string
+		// Prioritize k3s-agent (more common); otherwise k3s
+		switch {
+		case bytes.Contains(units, []byte("k3s-agent.service")):
+			service = "k3s-agent"
+		case bytes.Contains(units, []byte("k3s.service")):
+			service = "k3s"
+		default:
+			return fmt.Errorf("failed to find a registered k3s systemd service")
+		}
+
+		out, err := nsenterCmd("systemctl", "restart", service).CombinedOutput()
 		slog.Debug(string(out))
 		if err != nil {
-			return fmt.Errorf("unable to restart k3s: %w", err)
+			return fmt.Errorf("unable to restart the %s systemd service: %w", service, err)
 		}
 	} else {
 		// TODO: this approach still leads to the behavior mentioned in https://github.com/spinframework/runtime-class-manager/issues/140:
