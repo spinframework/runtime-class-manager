@@ -128,6 +128,4 @@ type ShimList struct {
 	Items           []Shim `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&Shim{}, &ShimList{})
-}
+func init() {}
