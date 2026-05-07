@@ -261,3 +261,36 @@ func TestNormalizeArch(t *testing.T) {
 		})
 	}
 }
+
+func TestTrimK8sName(t *testing.T) {
+	tests := []struct {
+		input string
+		want  string
+	}{
+		{
+			"k8s-name",
+			"k8s-name",
+		},
+		{
+			"k8s-name!",
+			"k8s-name",
+		},
+		{
+			"verrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrylong-k8s-nameeeeeeeeeeeeeeeee",
+			"verrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrylong-k8s-nameeeeeeeeeeee",
+		},
+		{
+			"verrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrylong-k8s-name----------------",
+			"verrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrylong-k8s-name",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			got := trimK8sName(tt.input)
+			if got != tt.want {
+				t.Errorf("trimK8sName(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}

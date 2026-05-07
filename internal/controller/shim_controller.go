@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -481,8 +482,7 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 	}
 	sr.setOperationConfiguration(shim, &opConfig, artifact)
 
-	name := node.Name + "-" + shim.Name + "-" + operation
-	nameMax := int(math.Min(float64(len(name)), K8sNameMaxLength))
+	name := trimK8sName(node.Name + "-" + shim.Name + "-" + operation)
 
 	job := &batchv1.Job{
 		TypeMeta: metav1.TypeMeta{
@@ -490,7 +490,7 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 			Kind:       "Job",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name[:nameMax],
+			Name:      name,
 			Namespace: os.Getenv("CONTROLLER_NAMESPACE"),
 			Annotations: map[string]string{
 				"spinkube.dev/nodeName":  node.Name,
@@ -498,7 +498,7 @@ func (sr *ShimReconciler) createJobManifest(shim *rcmv1.Shim, node *corev1.Node,
 				"spinkube.dev/operation": operation,
 			},
 			Labels: map[string]string{
-				name[:nameMax]:           "true",
+				name:                     "true",
 				"spinkube.dev/shimName":  shim.Name,
 				"spinkube.dev/operation": operation,
 				"spinkube.dev/job":       "true",
@@ -612,8 +612,7 @@ func (sr *ShimReconciler) handleDeployRuntimeClass(ctx context.Context, shim *rc
 
 // createRuntimeClassManifest creates a RuntimeClass manifest for a Shim.
 func (sr *ShimReconciler) createRuntimeClassManifest(shim *rcmv1.Shim) (*nodev1.RuntimeClass, error) {
-	name := shim.Spec.RuntimeClass.Name
-	nameMax := int(math.Min(float64(len(name)), K8sNameMaxLength))
+	name := trimK8sName(shim.Spec.RuntimeClass.Name)
 
 	nodeSelector := shim.Spec.NodeSelector
 	if nodeSelector == nil {
@@ -626,8 +625,8 @@ func (sr *ShimReconciler) createRuntimeClassManifest(shim *rcmv1.Shim) (*nodev1.
 			Kind:       "RuntimeClass",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   name[:nameMax],
-			Labels: map[string]string{name[:nameMax]: "true"},
+			Name:   name,
+			Labels: map[string]string{name: "true"},
 		},
 		Handler: shim.Spec.RuntimeClass.Handler,
 		Scheduling: &nodev1.Scheduling{
@@ -729,4 +728,13 @@ func (sr *ShimReconciler) ensureFinalizerForShim(ctx context.Context, shim *rcmv
 
 func ptr[T any](v T) *T {
 	return &v
+}
+
+// trims the K8s name per the K8sNameMaxLength default and ensures it ends with an alphanumeric character
+func trimK8sName(name string) string {
+	var trailingNonAlphaNumRegex = regexp.MustCompile(`[^a-zA-Z0-9]+$`)
+
+	nameMax := int(math.Min(float64(len(name)), K8sNameMaxLength))
+
+	return trailingNonAlphaNumRegex.ReplaceAllString(name[:nameMax], "")
 }
