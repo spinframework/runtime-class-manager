@@ -63,7 +63,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) object paths="./..."
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -174,11 +174,11 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
 
 .PHONY: deploy-samples
-deploy-samples: ## Install test shims from ./hack/.
+deploy-samples: ## Install test shims from ./config/samples.
 	$(KUSTOMIZE) build config/samples | $(KUBECTL) apply -f -
 
 .PHONY: undeploy-samples
-undeploy-samples: ## Install test shims from ./hack/.
+undeploy-samples: ## Install test shims from ./config/samples.
 	$(KUSTOMIZE) build config/samples | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: undeploy
