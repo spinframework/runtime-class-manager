@@ -20,7 +20,6 @@
 package containerd
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"log/slog"
@@ -92,16 +91,8 @@ func (c K3sRestarter) Restart() error {
 	// If listing systemd units succeeds, prefer systemctl restart; otherwise kill pid
 	// First, collect systemd units to determine which k3s service to restart
 	if units, err := ListSystemdUnits(); err == nil {
-		var service string
-		// Prioritize k3s-agent (more common); otherwise k3s
-		switch {
-		case bytes.Contains(units, []byte("k3s-agent.service")):
-			service = "k3s-agent"
-		case bytes.Contains(units, []byte("k3s.service")):
-			service = "k3s"
-		default:
-			return fmt.Errorf("failed to find a registered k3s systemd service")
-		}
+		// It matches with `k3s.service`, and `k3s-xxx.service`
+		service := regexp.MustCompile(`k3s(-.*|)\.service`).FindString(string(units))
 
 		out, err := nsenterCmd("systemctl", "restart", service).CombinedOutput()
 		slog.Debug(string(out))
