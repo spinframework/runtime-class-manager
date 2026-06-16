@@ -206,11 +206,13 @@ jobs:
           # Get install pod logs
           IFS=',' read -ra shims <<< "${{ env.SAMPLE_SHIMS }}"
           for shim_file in "${shims[@]}"; do
+            cd ${{ github.workspace }}/config/samples
             shim_name="$(cat $shim_file | yq '.metadata.name')"
             install_pod="$(kubectl get pods -n rcm --no-headers -o name | grep $shim_name-install)"
             kubectl describe -n rcm $install_pod || true
             kubectl logs -n rcm -c downloader $install_pod || true
             kubectl logs -n rcm -c provisioner $install_pod || true
+            cd -
           done
 
           # RCM pod logs
