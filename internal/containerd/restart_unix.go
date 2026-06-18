@@ -72,15 +72,8 @@ func (c K0sRestarter) Restart() error {
 	if err != nil {
 		return fmt.Errorf("unable to list systemd units: %w", err)
 	}
-	service := regexp.MustCompile("k0sworker|k0scontroller").FindString(string(units))
 
-	out, err := nsenterCmd("systemctl", "restart", service).CombinedOutput()
-	slog.Debug(string(out))
-	if err != nil {
-		return fmt.Errorf("unable to restart %s: %w", service, err)
-	}
-
-	return nil
+	return findAndRestartSystemdService(string(units), "k0sworker|k0scontroller")
 }
 
 type K3sRestarter struct{}
@@ -91,22 +84,16 @@ func (c K3sRestarter) Restart() error {
 	// If listing systemd units succeeds, prefer systemctl restart; otherwise kill pid
 	// First, collect systemd units to determine which k3s service to restart
 	if units, err := ListSystemdUnits(); err == nil {
-		// It matches with `k3s.service`, and `k3s-xxx.service`
-		service := regexp.MustCompile(`k3s(-.*|)\.service`).FindString(string(units))
+		// The pattern matches with `k3s.service`, and `k3s-xxx.service`
+		return findAndRestartSystemdService(string(units), `k3s(-.*|)\.service`)
+	}
 
-		out, err := nsenterCmd("systemctl", "restart", service).CombinedOutput()
-		slog.Debug(string(out))
-		if err != nil {
-			return fmt.Errorf("unable to restart the %s systemd service: %w", service, err)
-		}
-	} else {
-		// Assuming k3d; PID 1 is the main k3d entrypoint which should be restarted
-		// rather than the nested k3s process
-		out, err := nsenterCmd("kill", "1").CombinedOutput()
-		slog.Debug(string(out))
-		if err != nil {
-			return fmt.Errorf("unable to restart k3s via TERM signal to PID 1: %w", err)
-		}
+	// Assuming k3d; PID 1 is the main k3d entrypoint which should be restarted
+	// rather than the nested k3s process
+	out, err := nsenterCmd("kill", "1").CombinedOutput()
+	slog.Debug(string(out))
+	if err != nil {
+		return fmt.Errorf("unable to restart k3s via TERM signal to PID 1: %w", err)
 	}
 	return nil
 }
@@ -132,15 +119,8 @@ func (c RKE2Restarter) Restart() error {
 	if err != nil {
 		return fmt.Errorf("unable to list systemd units: %w", err)
 	}
-	service := regexp.MustCompile("rke2-agent|rke2-server").FindString(string(units))
 
-	out, err := nsenterCmd("systemctl", "restart", service).CombinedOutput()
-	slog.Debug(string(out))
-	if err != nil {
-		return fmt.Errorf("unable to restart %s: %w", service, err)
-	}
-
-	return nil
+	return findAndRestartSystemdService(string(units), "rke2-agent|rke2-server")
 }
 
 func ListSystemdUnits() ([]byte, error) {
@@ -172,4 +152,19 @@ func getPid(executable string) (int, error) {
 	}
 
 	return containerdProcesses[0].Pid(), nil
+}
+
+func findAndRestartSystemdService(list, pattern string) error {
+	service := regexp.MustCompile(pattern).FindString(list)
+	if service == "" {
+		return fmt.Errorf("unable to find a pattern %#q in systemd", pattern)
+	}
+
+	out, err := nsenterCmd("systemctl", "restart", service).CombinedOutput()
+	slog.Debug(string(out))
+	if err != nil {
+		return fmt.Errorf("unable to restart the %s systemd service: %w", service, err)
+	}
+
+	return nil
 }
